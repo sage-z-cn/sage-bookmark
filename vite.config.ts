@@ -6,7 +6,11 @@ import zip from 'vite-plugin-zip-pack'
 import manifest from './manifest.config.js'
 import { name, version } from './package.json'
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
+  build: {
+    // dev 构建输出到 dist-dev，生产构建输出到 dist
+    outDir: command === 'build' ? 'dist' : 'dist-dev',
+  },
   resolve: {
     alias: {
       '@': `${path.resolve(__dirname, 'src')}`,
@@ -24,4 +28,4 @@ export default defineConfig({
       ],
     },
   },
-})
+}))
