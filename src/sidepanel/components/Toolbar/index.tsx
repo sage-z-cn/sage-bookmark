@@ -110,22 +110,13 @@ export default function Toolbar({
 
       <div className={styles.spacer} />
 
-      <Tooltip title={viewMode === "grid" ? "大图标模式" : "切换到图标视图"}>
+      {/* 视图切换按钮：点击在网格/列表视图间切换 */}
+      <Tooltip title={viewMode === "grid" ? "切换到列表视图" : "切换到图标视图"}>
         <Button
           type="text"
           size="small"
-          icon={<AppstoreOutlined />}
-          className={viewMode === "grid" ? styles.viewModeActive : undefined}
-          onClick={() => setViewMode("grid")}
-        />
-      </Tooltip>
-      <Tooltip title={viewMode === "list" ? "详细列表模式" : "切换到列表视图"}>
-        <Button
-          type="text"
-          size="small"
-          icon={<UnorderedListOutlined />}
-          className={viewMode === "list" ? styles.viewModeActive : undefined}
-          onClick={() => setViewMode("list")}
+          icon={viewMode === "grid" ? <UnorderedListOutlined /> : <AppstoreOutlined />}
+          onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
         />
       </Tooltip>
     </div>
