@@ -297,10 +297,15 @@ function AppWithDnd() {
   // 处理同目录内排序：先乐观更新UI，再调用API
   const handleReorder = useCallback(
     (activeId: string, overId: string) => {
+      const currentItems = bookmarkCtx.currentItems;
+      const overIndex = currentItems.findIndex((item) => item.id === overId);
+      if (overIndex === -1) return;
+
       // 乐观更新UI
       bookmarkCtx.optimisticReorder(activeId, overId);
-      // 调用API实际移动（移动到目标位置）
-      bookmarkCtx.moveItems([activeId], bookmarkCtx.currentNodeId);
+
+      // Chrome move API 的索引计算与 JS splice 一致，直接使用 overIndex
+      bookmarkCtx.moveItems([activeId], bookmarkCtx.currentNodeId, overIndex);
     },
     [bookmarkCtx],
   );
