@@ -18,6 +18,7 @@ export default defineManifest({
     'bookmarks',
     'storage',
     'sidePanel',
+    'favicon',
   ],
   content_scripts: [{
     js: ['src/content/main.tsx'],
