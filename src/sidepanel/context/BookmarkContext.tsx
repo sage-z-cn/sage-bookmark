@@ -53,6 +53,10 @@ interface BookmarkContextValue {
     targetFolderId: string,
     targetIndex?: number,
   ) => Promise<void>;
+  // 乐观更新：同目录内重排
+  optimisticReorder: (activeId: string, overId: string) => void;
+  // 乐观更新：移入目标文件夹
+  optimisticMoveIntoFolder: (ids: string[], targetFolderId: string) => void;
 }
 
 const BookmarkContext = createContext<BookmarkContextValue | null>(null);
@@ -75,20 +79,25 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
   const historyRef = useRef<string[]>(["1"]);
   const historyIdxRef = useRef(0);
 
+  const initializedRef = useRef(false);
+
   const loadTree = useCallback(async () => {
     setLoading(true);
     try {
       const idx = await bookmarkService.getTree();
       setIndex(idx);
-      const bookmarkBarId = "1";
-      if (idx.nodeMap.has(bookmarkBarId)) {
-        setCurrentNodeId(bookmarkBarId);
-      } else if (
-        idx.rootNodes.length > 0 &&
-        idx.rootNodes[0].children?.length
-      ) {
-        const firstChild = idx.rootNodes[0].children[0];
-        setCurrentNodeId(firstChild.id);
+      if (!initializedRef.current) {
+        initializedRef.current = true;
+        const bookmarkBarId = "1";
+        if (idx.nodeMap.has(bookmarkBarId)) {
+          setCurrentNodeId(bookmarkBarId);
+        } else if (
+          idx.rootNodes.length > 0 &&
+          idx.rootNodes[0].children?.length
+        ) {
+          const firstChild = idx.rootNodes[0].children[0];
+          setCurrentNodeId(firstChild.id);
+        }
       }
     } finally {
       setLoading(false);
@@ -338,6 +347,69 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
     [index],
   );
 
+  // 乐观更新：同目录内将 activeId 对应的项移动到 overId 对应项的位置
+  const optimisticReorder = useCallback(
+    (activeId: string, overId: string) => {
+      setIndex((prev) => {
+        if (!prev) return prev;
+        const children = prev.childrenMap.get(currentNodeId);
+        if (!children) return prev;
+
+        const oldIndex = children.findIndex((i) => i.id === activeId);
+        const newIndex = children.findIndex((i) => i.id === overId);
+        if (oldIndex === -1 || newIndex === -1) return prev;
+
+        const reordered = [...children];
+        const [moved] = reordered.splice(oldIndex, 1);
+        reordered.splice(newIndex, 0, moved);
+
+        // 同步更新 index 字段
+        const updated = reordered.map((item, i) => ({ ...item, index: i }));
+
+        const nextChildrenMap = new Map(prev.childrenMap);
+        nextChildrenMap.set(currentNodeId, updated);
+        return { ...prev, childrenMap: nextChildrenMap };
+      });
+    },
+    [currentNodeId],
+  );
+
+  // 乐观更新：将指定项从当前目录移除（移入文件夹场景）
+  const optimisticMoveIntoFolder = useCallback(
+    (ids: string[], targetFolderId: string) => {
+      setIndex((prev) => {
+        if (!prev) return prev;
+        const idSet = new Set(ids);
+
+        // 从当前目录移除
+        const srcChildren = prev.childrenMap.get(currentNodeId);
+        if (!srcChildren) return prev;
+        const remaining = srcChildren.filter((i) => !idSet.has(i.id));
+        const updatedRemaining = remaining.map((item, i) => ({
+          ...item,
+          index: i,
+        }));
+
+        // 添加到目标文件夹末尾
+        const dstChildren = prev.childrenMap.get(targetFolderId) ?? [];
+        const movedItems = srcChildren
+          .filter((i) => idSet.has(i.id))
+          .map((item, i) => ({
+            ...item,
+            parentId: targetFolderId,
+            index: dstChildren.length + i,
+          }));
+        const updatedDstChildren = [...dstChildren, ...movedItems];
+
+        const nextChildrenMap = new Map(prev.childrenMap);
+        nextChildrenMap.set(currentNodeId, updatedRemaining);
+        nextChildrenMap.set(targetFolderId, updatedDstChildren);
+        return { ...prev, childrenMap: nextChildrenMap };
+      });
+    },
+    [currentNodeId],
+  );
+
   const value = useMemo<BookmarkContextValue>(
     () => ({
       index,
@@ -370,6 +442,8 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
       paste,
       canPaste,
       moveItems,
+      optimisticReorder,
+      optimisticMoveIntoFolder,
     }),
     [
       index,
@@ -402,6 +476,8 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
       paste,
       canPaste,
       moveItems,
+      optimisticReorder,
+      optimisticMoveIntoFolder,
     ],
   );
 

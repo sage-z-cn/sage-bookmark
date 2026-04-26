@@ -44,6 +44,8 @@ export default function DragContext({
     clearSelection,
     navigateTo,
     moveItems,
+    optimisticReorder,
+    optimisticMoveIntoFolder,
     setSelectedIds,
   } = useBookmarkContext();
 
@@ -123,17 +125,23 @@ export default function DragContext({
         : [activeItemId];
 
       if (overItem.type === "folder") {
-        // 移动到目标文件夹
+        optimisticMoveIntoFolder(idsToMove, overId);
         moveItems(idsToMove, overId);
       } else {
-        // 移动到同一位置（重新排序）
+        optimisticReorder(activeItemId, overId);
         const targetIndex = currentItems.findIndex((i) => i.id === overId);
         if (targetIndex !== -1) {
           moveItems(idsToMove, overItem.parentId!, targetIndex);
         }
       }
     },
-    [currentItems, selectedIds, moveItems],
+    [
+      currentItems,
+      selectedIds,
+      moveItems,
+      optimisticReorder,
+      optimisticMoveIntoFolder,
+    ],
   );
 
   const handleDragCancel = useCallback(() => {
