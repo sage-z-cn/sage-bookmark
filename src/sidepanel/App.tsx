@@ -127,7 +127,10 @@ function AppContent() {
 
       if (isInput) return;
 
-      if (e.key === "Delete") {
+      if (e.key === "Backspace") {
+        e.preventDefault();
+        ctx.goBack();
+      } else if (e.key === "Delete") {
         e.preventDefault();
         handleDelete();
       } else if (e.key === "F2") {
