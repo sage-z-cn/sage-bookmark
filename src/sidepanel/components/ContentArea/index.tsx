@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { Spin } from "antd";
 import { useBookmarkContext } from "@/sidepanel/context/BookmarkContext";
 import { useViewSettings } from "@/sidepanel/context/ViewSettingsContext";
@@ -37,6 +37,7 @@ export default function ContentArea({
     setSelectedIds,
     selectAll,
     clipboard,
+    clearClipboard,
   } = useBookmarkContext();
   const { viewMode } = useViewSettings();
 
@@ -70,6 +71,17 @@ export default function ContentArea({
     clipboard?.action === "cut" && clipboard.sourceParentId === currentNodeId
       ? new Set(clipboard.ids)
       : new Set<string>();
+
+  // 按 Esc 取消剪切状态
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape" && clipboard?.action === "cut") {
+        clearClipboard();
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [clipboard, clearClipboard]);
 
   if (loading) {
     return (

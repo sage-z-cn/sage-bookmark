@@ -46,6 +46,7 @@ interface BookmarkContextValue {
   cut: () => void;
   copy: () => void;
   paste: () => Promise<void>;
+  clearClipboard: () => void;
   canPaste: boolean;
   // 移动
   moveItems: (
@@ -287,6 +288,11 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
     });
   }, [selectedIds, currentNodeId]);
 
+  // 剪贴板：清空
+  const clearClipboard = useCallback(() => {
+    setClipboard(null);
+  }, []);
+
   // 剪贴板：粘贴
   const paste = useCallback(async () => {
     if (!clipboard || !index) return;
@@ -440,6 +446,7 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
       cut,
       copy,
       paste,
+      clearClipboard,
       canPaste,
       moveItems,
       optimisticReorder,
@@ -474,6 +481,7 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
       cut,
       copy,
       paste,
+      clearClipboard,
       canPaste,
       moveItems,
       optimisticReorder,
