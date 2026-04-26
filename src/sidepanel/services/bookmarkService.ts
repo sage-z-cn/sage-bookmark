@@ -9,7 +9,7 @@ function toAppNode(node: chrome.bookmarks.BookmarkTreeNode): AppBookmarkNode {
     index: node.index ?? 0,
     title:
       node.title ||
-      (node.id === "0" ? "根目录" : isFolder ? "未命名文件夹" : "未命名书签"),
+      (node.id === "0" ? "根目录" : isFolder ? "未命名文件夹" : ""),
     url: node.url,
     type: isFolder ? "folder" : "bookmark",
     dateAdded: node.dateAdded ?? 0,
