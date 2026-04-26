@@ -1,15 +1,20 @@
-import { ConfigProvider, Empty } from "antd";
-import { genesisTheme } from "./styles/token";
+import { ConfigProvider } from 'antd'
+import { genesisTheme } from './styles/token'
+import { BookmarkProvider } from './context/BookmarkContext'
+import AddressBar from './components/AddressBar'
+import ContentArea from './components/ContentArea'
+import StatusBar from './components/StatusBar'
 
 export default function App() {
   return (
     <ConfigProvider theme={genesisTheme}>
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-        <Empty
-          description="Sage Bookmark — 书签管理器"
-          style={{ margin: "auto" }}
-        />
-      </div>
+      <BookmarkProvider>
+        <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <AddressBar />
+          <ContentArea />
+          <StatusBar />
+        </div>
+      </BookmarkProvider>
     </ConfigProvider>
-  );
+  )
 }

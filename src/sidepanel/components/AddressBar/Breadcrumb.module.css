@@ -1,0 +1,52 @@
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  gap: 0;
+  flex: 1;
+}
+
+.segment {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.separator {
+  font-size: 10px;
+  color: var(--color-neutral);
+  margin: 0 6px;
+}
+
+.crumb {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  padding: 4px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.crumb:hover {
+  color: var(--color-primary);
+  background-color: rgba(99, 102, 241, 0.06);
+}
+
+.crumbActive {
+  color: var(--color-text-primary);
+  font-weight: 500;
+  cursor: default;
+}
+
+.crumbActive:hover {
+  color: var(--color-text-primary);
+  background-color: transparent;
+}
