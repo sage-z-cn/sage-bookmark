@@ -281,6 +281,7 @@ export default function App() {
 
 function AppWithDnd() {
   const dockCtx = useDockContext();
+  const bookmarkCtx = useBookmarkContext();
 
   const handleDropToDock = useCallback(
     (ids: string[]) => {
@@ -289,8 +290,34 @@ function AppWithDnd() {
     [dockCtx],
   );
 
+  // 处理同目录内排序：先乐观更新UI，再调用API
+  const handleReorder = useCallback(
+    (activeId: string, overId: string) => {
+      // 乐观更新UI
+      bookmarkCtx.optimisticReorder(activeId, overId);
+      // 调用API实际移动（移动到目标位置）
+      bookmarkCtx.moveItems([activeId], bookmarkCtx.currentNodeId);
+    },
+    [bookmarkCtx],
+  );
+
+  // 处理移动到文件夹：先乐观更新UI，再调用API
+  const handleMoveToFolder = useCallback(
+    (ids: string[], targetFolderId: string) => {
+      // 乐观更新UI
+      bookmarkCtx.optimisticMoveIntoFolder(ids, targetFolderId);
+      // 调用API实际移动
+      bookmarkCtx.moveItems(ids, targetFolderId);
+    },
+    [bookmarkCtx],
+  );
+
   return (
-    <GlobalDndProvider onDropToDock={handleDropToDock}>
+    <GlobalDndProvider
+      onDropToDock={handleDropToDock}
+      onReorder={handleReorder}
+      onMoveToFolder={handleMoveToFolder}
+    >
       <AppContent />
     </GlobalDndProvider>
   );

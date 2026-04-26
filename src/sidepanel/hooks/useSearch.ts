@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import type { AppBookmarkNode, BookmarkIndex } from "@/types/bookmark";
 
 export type SearchScope = "current" | "global";
@@ -25,20 +25,6 @@ function useDebounce<T>(value: T, delay: number): T {
   }, [value, delay]);
 
   return debouncedValue;
-}
-
-// 获取节点路径（从根到当前节点）
-function getNodePath(
-  nodeId: string,
-  nodeMap: Map<string, AppBookmarkNode>,
-): Array<{ id: string; title: string }> {
-  const path: Array<{ id: string; title: string }> = [];
-  let current = nodeMap.get(nodeId);
-  while (current) {
-    path.unshift({ id: current.id, title: current.title });
-    current = current.parentId ? nodeMap.get(current.parentId) : undefined;
-  }
-  return path;
 }
 
 // 检查节点是否在指定文件夹下（包含子文件夹）

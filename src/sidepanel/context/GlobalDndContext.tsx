@@ -79,6 +79,8 @@ interface GlobalDndProviderProps {
   onDragStart?: (ids: string[]) => void;
   onDragEnd?: () => void;
   onDropToDock?: (ids: string[]) => void;
+  onReorder?: (activeId: string, overId: string) => void;
+  onMoveToFolder?: (ids: string[], targetFolderId: string) => void;
   renderOverlay?: (item: DragItemData, count: number) => ReactNode;
 }
 
@@ -89,6 +91,8 @@ export function GlobalDndProvider({
   onDragStart,
   onDragEnd,
   onDropToDock,
+  onReorder,
+  onMoveToFolder,
   renderOverlay,
 }: GlobalDndProviderProps) {
   const [state, setState] = useState<DragState>({
@@ -141,10 +145,36 @@ export function GlobalDndProvider({
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
-      const { over } = event;
+      const { active, over } = event;
 
-      if (over?.id === DOCK_DROPPABLE_ID && state.source === "content") {
+      if (!over) {
+        // 没有放置目标，取消拖拽
+        setState({
+          isDragging: false,
+          source: null,
+          activeId: null,
+          activeIds: [],
+          activeItem: null,
+        });
+        setIsOverDock(false);
+        onDragEnd?.();
+        return;
+      }
+
+      // 处理放置到 Dock
+      if (over.id === DOCK_DROPPABLE_ID && state.source === "content") {
         onDropToDock?.(state.activeIds);
+      }
+      // 处理同目录排序（放置到另一个内容项上）
+      else if (over.id !== active.id && state.source === "content") {
+        const overData = over.data.current;
+        // 如果放置目标是文件夹，则移动到文件夹
+        if (overData?.type === "folder") {
+          onMoveToFolder?.(state.activeIds, over.id as string);
+        } else {
+          // 同目录内排序
+          onReorder?.(active.id as string, over.id as string);
+        }
       }
 
       setState({
@@ -157,7 +187,7 @@ export function GlobalDndProvider({
       setIsOverDock(false);
       onDragEnd?.();
     },
-    [onDragEnd, onDropToDock, state],
+    [onDragEnd, onDropToDock, onReorder, onMoveToFolder, state],
   );
 
   const handleDragCancel = useCallback(() => {
