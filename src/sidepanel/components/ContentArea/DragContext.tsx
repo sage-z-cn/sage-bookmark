@@ -10,11 +10,9 @@ import {
   type DragEndEvent,
   type DragOverEvent,
 } from "@dnd-kit/core";
-import {
-  SortableContext,
-  rectSortingStrategy,
-} from "@dnd-kit/sortable";
+import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
 import { useBookmarkContext } from "@/sidepanel/context/BookmarkContext";
+import { truncateUrl } from "@/sidepanel/utils/format";
 import SortableItem from "./SortableItem";
 import styles from "./ContentArea.module.css";
 
@@ -30,6 +28,7 @@ export interface DragItemData {
   id: string;
   type: "bookmark" | "folder";
   title: string;
+  url?: string;
 }
 
 export default function DragContext({
@@ -74,6 +73,7 @@ export default function DragContext({
         id: item.id,
         type: item.type,
         title: item.title,
+        url: item.url,
       });
 
       // 如果拖拽的项目不在已选中列表中，清除其他选中并选中当前
@@ -160,7 +160,10 @@ export default function DragContext({
             <div className={styles.dragOverlayContent}>
               {selectedIds.size > 1
                 ? `${selectedIds.size} 个项目`
-                : activeData.title}
+                : activeData.title ||
+                  (activeData.url
+                    ? truncateUrl(activeData.url)
+                    : "未命名文件夹")}
             </div>
           </div>
         ) : null}

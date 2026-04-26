@@ -119,12 +119,15 @@
   padding: 8px 16px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
   opacity: 0.9;
+  max-width: 200px;
 }
 
 .dragOverlayContent {
   font-size: 13px;
   color: var(--color-text-primary);
   font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
