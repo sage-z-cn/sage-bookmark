@@ -8,6 +8,7 @@ import {
 import { ViewSettingsProvider } from "./context/ViewSettingsContext";
 import AddressBar from "./components/AddressBar";
 import Toolbar from "./components/Toolbar";
+import SearchBar from "./components/SearchBar";
 import ContentArea from "./components/ContentArea";
 import StatusBar from "./components/StatusBar";
 import ContextMenu from "./components/ContextMenu";
@@ -15,11 +16,24 @@ import CreateBookmarkDialog from "./components/Dialogs/CreateBookmarkDialog";
 import CreateFolderDialog from "./components/Dialogs/CreateFolderDialog";
 import EditBookmarkDialog from "./components/Dialogs/EditBookmarkDialog";
 import ConfirmDeleteDialog from "./components/Dialogs/ConfirmDeleteDialog";
+import { useSearch } from "./hooks/useSearch";
 import type { AppBookmarkNode } from "@/types/bookmark";
 
 function AppContent() {
   const ctx = useBookmarkContext();
-  const { selectedIds, index } = ctx;
+  const { selectedIds, index, currentNodeId } = ctx;
+
+  // 搜索状态
+  const [searchBarVisible, setSearchBarVisible] = useState(false);
+  const {
+    query,
+    setQuery,
+    scope,
+    setScope,
+    isActive: isSearchActive,
+    results: searchResults,
+    closeSearch,
+  } = useSearch({ index, currentNodeId });
 
   // 对话框状态
   const [createBookmarkOpen, setCreateBookmarkOpen] = useState(false);
@@ -80,13 +94,40 @@ function AppContent() {
     setRenamingFolderId(null);
   }, []);
 
+  // 切换搜索栏
+  const handleToggleSearch = useCallback(() => {
+    setSearchBarVisible((prev) => {
+      if (prev) {
+        // 关闭时清空搜索
+        closeSearch();
+      }
+      return !prev;
+    });
+  }, [closeSearch]);
+
   // 键盘快捷键
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       const tag = (e.target as HTMLElement).tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA") return;
-
+      const isInput = tag === "INPUT" || tag === "TEXTAREA";
       const ctrl = e.ctrlKey || e.metaKey;
+
+      // Ctrl+F：打开搜索
+      if (ctrl && e.key === "f") {
+        e.preventDefault();
+        setSearchBarVisible(true);
+        return;
+      }
+
+      // Esc：关闭搜索栏（如果打开）
+      if (e.key === "Escape" && searchBarVisible && !isInput) {
+        e.preventDefault();
+        setSearchBarVisible(false);
+        closeSearch();
+        return;
+      }
+
+      if (isInput) return;
 
       if (e.key === "Delete") {
         e.preventDefault();
@@ -111,7 +152,7 @@ function AppContent() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleDelete, handleEdit, ctx]);
+  }, [handleDelete, handleEdit, ctx, searchBarVisible, closeSearch]);
 
   // 处理新建子文件夹（从右键菜单触发）
   const handleCreateSubfolder = useCallback((parentId: string) => {
@@ -130,13 +171,33 @@ function AppContent() {
         }}
         onEdit={() => handleEdit()}
         onDelete={handleDelete}
+        searchActive={searchBarVisible}
+        onToggleSearch={handleToggleSearch}
       />
+      {searchBarVisible && (
+        <SearchBar
+          query={query}
+          onQueryChange={setQuery}
+          scope={scope}
+          onScopeChange={setScope}
+          onClose={() => {
+            setSearchBarVisible(false);
+            closeSearch();
+          }}
+        />
+      )}
       <ContentArea
         renamingFolderId={renamingFolderId}
         onRenameSubmit={handleRenameSubmit}
         onRenameCancel={handleRenameCancel}
+        searchResults={isSearchActive ? searchResults : undefined}
+        searchQuery={isSearchActive ? query : undefined}
+        searchActive={isSearchActive}
       />
-      <StatusBar />
+      <StatusBar
+        searchActive={isSearchActive}
+        searchResultCount={searchResults.length}
+      />
 
       {/* 右键上下文菜单 */}
       <ContextMenu

@@ -2,6 +2,7 @@ import { useCallback, useRef } from "react";
 import { Spin } from "antd";
 import { useBookmarkContext } from "@/sidepanel/context/BookmarkContext";
 import { useViewSettings } from "@/sidepanel/context/ViewSettingsContext";
+import type { SearchResult } from "@/sidepanel/hooks/useSearch";
 import SortableItem from "./SortableItem";
 import ListSortableItem from "./ListSortableItem";
 import DragContext from "./DragContext";
@@ -12,12 +13,18 @@ interface ContentAreaProps {
   renamingFolderId?: string | null;
   onRenameSubmit?: (newTitle: string) => void;
   onRenameCancel?: () => void;
+  searchResults?: SearchResult[];
+  searchQuery?: string;
+  searchActive?: boolean;
 }
 
 export default function ContentArea({
   renamingFolderId,
   onRenameSubmit,
   onRenameCancel,
+  searchResults,
+  searchQuery,
+  searchActive = false,
 }: ContentAreaProps) {
   const {
     loading,
@@ -50,6 +57,12 @@ export default function ContentArea({
     onSelectionChange: handleRubberBandSelection,
   });
 
+  // 判断是否处于搜索模式
+  const isSearchMode = searchActive && searchResults !== undefined;
+  const displayItems = isSearchMode
+    ? searchResults.map((r) => r.item)
+    : currentItems;
+
   if (loading) {
     return (
       <div className={styles.loading}>
@@ -59,14 +72,18 @@ export default function ContentArea({
   }
 
   const allSelected =
-    currentItems.length > 0 &&
-    currentItems.every((item) => selectedIds.has(item.id));
+    displayItems.length > 0 &&
+    displayItems.every((item) => selectedIds.has(item.id));
 
-  if (currentItems.length === 0) {
-    return <div className={styles.empty}>此文件夹为空</div>;
+  if (displayItems.length === 0) {
+    return (
+      <div className={styles.empty}>
+        {isSearchMode ? "未找到匹配的书签" : "此文件夹为空"}
+      </div>
+    );
   }
 
-  function handleDoubleClick(item: (typeof currentItems)[number]) {
+  function handleDoubleClick(item: (typeof displayItems)[number]) {
     if (item.type === "folder") {
       navigateTo(item.id);
     } else if (item.url) {
@@ -97,7 +114,7 @@ export default function ContentArea({
               <div className={styles.listHeaderUrl}>URL</div>
               <div className={styles.listHeaderDate}>添加日期</div>
             </div>
-            {currentItems.map((item) => (
+            {displayItems.map((item) => (
               <ListSortableItem
                 key={item.id}
                 item={item}
@@ -107,12 +124,13 @@ export default function ContentArea({
                 renaming={renamingFolderId === item.id}
                 onRenameSubmit={onRenameSubmit}
                 onRenameCancel={onRenameCancel}
+                highlightQuery={searchQuery}
               />
             ))}
           </div>
         ) : (
           <div className={styles.grid}>
-            {currentItems.map((item) => (
+            {displayItems.map((item) => (
               <SortableItem
                 key={item.id}
                 item={item}
@@ -122,6 +140,7 @@ export default function ContentArea({
                 renaming={renamingFolderId === item.id}
                 onRenameSubmit={onRenameSubmit}
                 onRenameCancel={onRenameCancel}
+                highlightQuery={searchQuery}
               />
             ))}
           </div>

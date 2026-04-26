@@ -9,6 +9,7 @@ import {
   SnippetsOutlined,
   AppstoreOutlined,
   UnorderedListOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import { useBookmarkContext } from "@/sidepanel/context/BookmarkContext";
 import { useViewSettings } from "@/sidepanel/context/ViewSettingsContext";
@@ -19,6 +20,8 @@ interface ToolbarProps {
   onCreateFolder: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  searchActive?: boolean;
+  onToggleSearch?: () => void;
 }
 
 export default function Toolbar({
@@ -26,6 +29,8 @@ export default function Toolbar({
   onCreateFolder,
   onEdit,
   onDelete,
+  searchActive = false,
+  onToggleSearch,
 }: ToolbarProps) {
   const { selectedIds, cut, copy, paste, canPaste } = useBookmarkContext();
   const { viewMode, setViewMode } = useViewSettings();
@@ -109,6 +114,19 @@ export default function Toolbar({
       </Tooltip>
 
       <div className={styles.spacer} />
+
+      {/* 搜索按钮 */}
+      <Tooltip title={searchActive ? "关闭搜索 (Esc)" : "搜索 (Ctrl+F)"}>
+        <Button
+          type="text"
+          size="small"
+          icon={<SearchOutlined />}
+          className={searchActive ? styles.searchActive : ""}
+          onClick={onToggleSearch}
+        />
+      </Tooltip>
+
+      <div className={styles.separator} />
 
       {/* 视图切换按钮：点击在网格/列表视图间切换 */}
       <Tooltip title={viewMode === "grid" ? "切换到列表视图" : "切换到图标视图"}>

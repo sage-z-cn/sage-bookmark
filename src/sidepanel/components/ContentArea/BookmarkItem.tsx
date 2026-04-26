@@ -4,6 +4,7 @@ import { Tooltip } from "antd";
 import type { AppBookmarkNode } from "@/types/bookmark";
 import { getFaviconUrl } from "@/sidepanel/services/faviconService";
 import { truncateUrl } from "@/sidepanel/utils/format";
+import HighlightText from "@/sidepanel/components/SearchBar/HighlightText";
 import styles from "./ContentArea.module.css";
 
 interface BookmarkItemProps {
@@ -11,6 +12,7 @@ interface BookmarkItemProps {
   selected: boolean;
   onSelect: (multi: boolean, range: boolean) => void;
   onDoubleClick: () => void;
+  highlightQuery?: string;
 }
 
 export default function BookmarkItem({
@@ -18,6 +20,7 @@ export default function BookmarkItem({
   selected,
   onSelect,
   onDoubleClick,
+  highlightQuery,
 }: BookmarkItemProps) {
   const [faviconError, setFaviconError] = useState(false);
   const faviconSrc =
@@ -64,7 +67,13 @@ export default function BookmarkItem({
             <BookOutlined className={styles.fallbackIcon} />
           )}
         </div>
-        <div className={styles.itemTitle}>{displayName}</div>
+        <div className={styles.itemTitle}>
+          {highlightQuery ? (
+            <HighlightText text={displayName} query={highlightQuery} />
+          ) : (
+            displayName
+          )}
+        </div>
       </div>
     </Tooltip>
   );

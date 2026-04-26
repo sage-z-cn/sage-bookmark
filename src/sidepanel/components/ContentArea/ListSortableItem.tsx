@@ -12,6 +12,7 @@ interface ListSortableItemProps {
   renaming?: boolean;
   onRenameSubmit?: (newTitle: string) => void;
   onRenameCancel?: () => void;
+  highlightQuery?: string;
 }
 
 export default function ListSortableItem({
@@ -22,6 +23,7 @@ export default function ListSortableItem({
   renaming = false,
   onRenameSubmit,
   onRenameCancel,
+  highlightQuery,
 }: ListSortableItemProps) {
   const {
     attributes,
@@ -54,6 +56,7 @@ export default function ListSortableItem({
         renaming={renaming}
         onRenameSubmit={onRenameSubmit}
         onRenameCancel={onRenameCancel}
+        highlightQuery={highlightQuery}
       />
     </div>
   );

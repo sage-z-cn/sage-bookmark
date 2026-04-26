@@ -14,6 +14,7 @@ interface SortableItemProps {
   onRenameSubmit?: (newTitle: string) => void;
   onRenameCancel?: () => void;
   isDragOverlay?: boolean;
+  highlightQuery?: string;
 }
 
 export default function SortableItem({
@@ -24,6 +25,7 @@ export default function SortableItem({
   renaming = false,
   onRenameSubmit,
   onRenameCancel,
+  highlightQuery,
 }: SortableItemProps) {
   const {
     attributes,
@@ -57,6 +59,7 @@ export default function SortableItem({
           renaming={renaming}
           onRenameSubmit={onRenameSubmit}
           onRenameCancel={onRenameCancel}
+          highlightQuery={highlightQuery}
         />
       ) : (
         <BookmarkItem
@@ -64,6 +67,7 @@ export default function SortableItem({
           selected={selected}
           onSelect={onSelect}
           onDoubleClick={onDoubleClick}
+          highlightQuery={highlightQuery}
         />
       )}
     </div>

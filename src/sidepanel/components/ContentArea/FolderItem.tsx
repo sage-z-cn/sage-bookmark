@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { FolderOutlined } from "@ant-design/icons";
 import { Tooltip } from "antd";
 import type { AppBookmarkNode } from "@/types/bookmark";
+import HighlightText from "@/sidepanel/components/SearchBar/HighlightText";
 import styles from "./ContentArea.module.css";
 
 interface FolderItemProps {
@@ -12,6 +13,7 @@ interface FolderItemProps {
   renaming?: boolean;
   onRenameSubmit?: (newTitle: string) => void;
   onRenameCancel?: () => void;
+  highlightQuery?: string;
 }
 
 export default function FolderItem({
@@ -22,6 +24,7 @@ export default function FolderItem({
   renaming = false,
   onRenameSubmit,
   onRenameCancel,
+  highlightQuery,
 }: FolderItemProps) {
   const [editValue, setEditValue] = useState(item.title);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -100,7 +103,13 @@ export default function FolderItem({
         <div className={styles.itemIcon}>
           <FolderOutlined style={{ fontSize: 40, color: "#F59E0B" }} />
         </div>
-        <div className={styles.itemTitle}>{item.title}</div>
+        <div className={styles.itemTitle}>
+          {highlightQuery ? (
+            <HighlightText text={item.title} query={highlightQuery} />
+          ) : (
+            item.title
+          )}
+        </div>
       </div>
     </Tooltip>
   );

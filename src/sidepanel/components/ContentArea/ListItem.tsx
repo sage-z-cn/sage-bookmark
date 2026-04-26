@@ -3,6 +3,7 @@ import { Tooltip } from "antd";
 import type { AppBookmarkNode } from "@/types/bookmark";
 import { getFaviconUrl } from "@/sidepanel/services/faviconService";
 import { formatDate } from "@/sidepanel/utils/format";
+import HighlightText from "@/sidepanel/components/SearchBar/HighlightText";
 import { useEffect, useRef, useState } from "react";
 import styles from "./ContentArea.module.css";
 
@@ -14,6 +15,7 @@ interface ListItemProps {
   renaming?: boolean;
   onRenameSubmit?: (newTitle: string) => void;
   onRenameCancel?: () => void;
+  highlightQuery?: string;
 }
 
 function FavIcon({ url }: { url?: string }) {
@@ -44,6 +46,7 @@ export default function ListItem({
   renaming = false,
   onRenameSubmit,
   onRenameCancel,
+  highlightQuery,
 }: ListItemProps) {
   const isFolder = item.type === "folder";
   const displayUrl = !isFolder && item.url ? item.url : "—";
@@ -136,7 +139,13 @@ export default function ListItem({
               onDoubleClick={(e) => e.stopPropagation()}
             />
           ) : (
-            <span className={styles.listName}>{displayName}</span>
+            <span className={styles.listName}>
+              {highlightQuery ? (
+                <HighlightText text={displayName} query={highlightQuery} />
+              ) : (
+                displayName
+              )}
+            </span>
           )}
         </div>
         <div className={styles.listCellUrl}>{displayUrl}</div>
