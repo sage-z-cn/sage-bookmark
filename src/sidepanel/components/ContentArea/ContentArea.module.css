@@ -154,6 +154,21 @@
   flex-shrink: 0;
 }
 
+.listHeaderCheckbox {
+  width: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.listHeaderCheckbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--color-primary);
+}
+
 .listHeaderName {
   flex: 2;
   min-width: 0;
@@ -185,11 +200,25 @@
 }
 
 .listRowSelected {
-  background: rgba(99, 102, 241, 0.08);
 }
 
 .listRowSelected:hover {
-  background: rgba(99, 102, 241, 0.12);
+  background: rgba(99, 102, 241, 0.04);
+}
+
+.listCellCheckbox {
+  width: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.listCellCheckbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--color-primary);
 }
 
 .listCellName {
@@ -226,6 +255,11 @@
 }
 
 @media (max-width: 500px) {
+  .listHeaderCheckbox,
+  .listCellCheckbox {
+    display: flex;
+  }
+
   .listHeaderUrl,
   .listHeaderDate,
   .listCellUrl,

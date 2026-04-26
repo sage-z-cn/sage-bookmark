@@ -104,6 +104,17 @@ export default function ListItem({
           onDoubleClick();
         }}
       >
+        <div className={styles.listCellCheckbox}>
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={(e) => {
+              e.stopPropagation();
+              onSelect(true, false);
+            }}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
         <div className={styles.listCellName}>
           {isFolder ? (
             <FolderOutlined

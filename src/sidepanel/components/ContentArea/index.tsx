@@ -27,6 +27,7 @@ export default function ContentArea({
     clearSelection,
     navigateTo,
     setSelectedIds,
+    selectAll,
   } = useBookmarkContext();
   const { viewMode } = useViewSettings();
 
@@ -57,6 +58,10 @@ export default function ContentArea({
     );
   }
 
+  const allSelected =
+    currentItems.length > 0 &&
+    currentItems.every((item) => selectedIds.has(item.id));
+
   if (currentItems.length === 0) {
     return <div className={styles.empty}>此文件夹为空</div>;
   }
@@ -75,6 +80,19 @@ export default function ContentArea({
         {viewMode === "list" ? (
           <div className={styles.listContainer}>
             <div className={styles.listHeader}>
+              <div className={styles.listHeaderCheckbox}>
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={() => {
+                    if (allSelected) {
+                      clearSelection();
+                    } else {
+                      selectAll();
+                    }
+                  }}
+                />
+              </div>
               <div className={styles.listHeaderName}>名称</div>
               <div className={styles.listHeaderUrl}>URL</div>
               <div className={styles.listHeaderDate}>添加日期</div>
