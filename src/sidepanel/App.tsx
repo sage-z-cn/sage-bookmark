@@ -28,8 +28,6 @@ function AppContent() {
   const {
     query,
     setQuery,
-    scope,
-    setScope,
     isActive: isSearchActive,
     results: searchResults,
     closeSearch,
@@ -178,8 +176,6 @@ function AppContent() {
         <SearchBar
           query={query}
           onQueryChange={setQuery}
-          scope={scope}
-          onScopeChange={setScope}
           onClose={() => {
             setSearchBarVisible(false);
             closeSearch();

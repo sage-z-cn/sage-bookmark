@@ -16,7 +16,6 @@ export default function StatusBar({
   const bookmarkCount = currentItems.filter(
     (i) => i.type === "bookmark",
   ).length;
-  const totalCount = currentItems.length;
 
   return (
     <div className={styles.statusBar}>
@@ -25,14 +24,7 @@ export default function StatusBar({
           <>搜索到 {searchResultCount} 个结果</>
         ) : (
           <>
-            {totalCount} 个项目
-            {folderCount > 0 && `（${folderCount} 个文件夹`}
-            {folderCount > 0 && bookmarkCount > 0 ? "，" : ""}
-            {bookmarkCount > 0
-              ? `${bookmarkCount} 个书签）`
-              : folderCount > 0
-                ? "）"
-                : ""}
+            {folderCount} 个文件夹 + {bookmarkCount} 个书签
           </>
         )}
       </span>

@@ -63,12 +63,11 @@ function fuzzyMatch(text: string, query: string): boolean {
 
 export function useSearch({ index, currentNodeId }: UseSearchOptions) {
   const [query, setQuery] = useState("");
-  const [scope, setScope] = useState<SearchScope>("current");
   const debouncedQuery = useDebounce(query, 300);
 
   const isActive = debouncedQuery.length > 0;
 
-  // 执行搜索
+  // 执行搜索（始终在当前文件夹及其子文件夹中搜索）
   const results = useMemo<SearchResult[]>(() => {
     if (!isActive || !index) return [];
 
@@ -86,14 +85,12 @@ export function useSearch({ index, currentNodeId }: UseSearchOptions) {
       const matchedUrl = node.url ? fuzzyMatch(node.url, q) : false;
 
       if (matchedTitle || matchedUrl) {
-        // 范围过滤：当前文件夹模式下只显示当前文件夹及其子文件夹中的结果
-        if (scope === "current") {
-          if (
-            !isUnderFolder(id, currentNodeId, index.nodeMap) &&
-            id !== currentNodeId
-          ) {
-            continue;
-          }
+        // 始终过滤：只显示当前文件夹及其子文件夹中的结果
+        if (
+          !isUnderFolder(id, currentNodeId, index.nodeMap) &&
+          id !== currentNodeId
+        ) {
+          continue;
         }
 
         seen.add(id);
@@ -101,23 +98,19 @@ export function useSearch({ index, currentNodeId }: UseSearchOptions) {
           item: node,
           matchedTitle,
           matchedUrl,
-          path:
-            scope === "global"
-              ? getNodePath(id, index.nodeMap)
-              : undefined,
         });
       }
     }
 
     return matches;
-  }, [debouncedQuery, index, scope, currentNodeId, isActive]);
+  }, [debouncedQuery, index, currentNodeId, isActive]);
 
   // 清空搜索
   const clearSearch = useCallback(() => {
     setQuery("");
   }, []);
 
-  // 关闭搜索（清空查询并可选重置范围）
+  // 关闭搜索
   const closeSearch = useCallback(() => {
     setQuery("");
   }, []);
@@ -125,8 +118,6 @@ export function useSearch({ index, currentNodeId }: UseSearchOptions) {
   return {
     query,
     setQuery,
-    scope,
-    setScope,
     debouncedQuery,
     isActive,
     results,
