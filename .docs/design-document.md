@@ -89,8 +89,8 @@ Sage Bookmark
 │   ├── 重命名
 │   ├── 删除
 │   └── 新建子文件夹
-└── 浏览器扩展图标弹窗（Popup）
-    └── 快捷入口 → 打开完整管理页面
+└── 浏览器扩展图标
+    └── 点击直接打开侧边面板（Sidepanel）
 ```
 
 ### 2.2 功能模块详细说明
@@ -615,10 +615,8 @@ sage-bookmark/
 │   │   └── styles/                 # 面板样式
 │   │       ├── global.css
 │   │       └── token.ts            # Genesis → Ant Design Token
-│   ├── popup/                      # 扩展弹窗
-│   │   ├── index.html
-│   │   ├── main.tsx
-│   │   └── App.tsx                 # 快捷入口 → 打开 Sidepanel
+│   ├── background/                # Service Worker
+│   │   └── main.ts                # 侧边栏行为配置（openPanelOnActionClick）
 │   ├── content/                    # Content Script
 │   │   ├── main.tsx                # 内容脚本注入入口
 │   │   └── views/
@@ -994,7 +992,9 @@ export default defineManifest({
   },
   action: {
     default_icon: { 48: "public/logo.png" },
-    default_popup: "src/popup/index.html",
+  },
+  background: {
+    service_worker: "src/background/main.ts",
   },
   permissions: ["bookmarks", "storage", "sidePanel"],
   side_panel: {
@@ -1118,8 +1118,8 @@ dist/
 ├── src/
 │   ├── sidepanel/
 │   │   └── index.html             + JS/CSS bundles
-│   ├── popup/
-│   │   └── index.html             + JS/CSS bundles
+│   ├── background/
+│   │   └── main.js                # Service Worker
 │   └── content/
 │       └── main.js                # Content Script
 └── assets/                        # 静态资源（字体、图片等）
