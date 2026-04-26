@@ -113,6 +113,7 @@ export default function ListItem({
               onSelect(true, false);
             }}
             onClick={(e) => e.stopPropagation()}
+            onDoubleClick={(e) => e.stopPropagation()}
           />
         </div>
         <div className={styles.listCellName}>
@@ -132,6 +133,7 @@ export default function ListItem({
               onKeyDown={handleKeyDown}
               onBlur={handleBlur}
               onClick={(e) => e.stopPropagation()}
+              onDoubleClick={(e) => e.stopPropagation()}
             />
           ) : (
             <span className={styles.listName}>{displayName}</span>

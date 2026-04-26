@@ -28,6 +28,8 @@ export function useRubberBand({
       // 只响应在空白区域（content 区域）的左键按下
       if (e.button !== 0) return;
       const target = e.target as HTMLElement;
+      // 不响应对可交互表单元素的点击，避免与 checkbox 等控件冲突
+      if (target.closest("input, button, a, select, textarea, label")) return;
       if (target.closest(itemSelector)) return;
 
       const container = containerRef.current;
