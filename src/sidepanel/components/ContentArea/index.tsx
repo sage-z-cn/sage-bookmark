@@ -4,7 +4,17 @@ import FolderItem from "./FolderItem";
 import BookmarkItem from "./BookmarkItem";
 import styles from "./ContentArea.module.css";
 
-export default function ContentArea() {
+interface ContentAreaProps {
+  renamingFolderId?: string | null;
+  onRenameSubmit?: (newTitle: string) => void;
+  onRenameCancel?: () => void;
+}
+
+export default function ContentArea({
+  renamingFolderId,
+  onRenameSubmit,
+  onRenameCancel,
+}: ContentAreaProps) {
   const {
     loading,
     currentItems,
@@ -55,6 +65,9 @@ export default function ContentArea() {
               selected={selectedIds.has(item.id)}
               onSelect={(multi) => toggleSelect(item.id, multi)}
               onDoubleClick={() => handleDoubleClick(item)}
+              renaming={renamingFolderId === item.id}
+              onRenameSubmit={onRenameSubmit}
+              onRenameCancel={onRenameCancel}
             />
           ) : (
             <BookmarkItem

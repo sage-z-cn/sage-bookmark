@@ -66,9 +66,66 @@ export const bookmarkService = {
     return results.map(toAppNode);
   },
 
+  // 在指定文件夹下创建书签
+  async createBookmark(
+    parentId: string,
+    title: string,
+    url: string,
+  ): Promise<AppBookmarkNode> {
+    const node = await chrome.bookmarks.create({ parentId, title, url });
+    return toAppNode(node);
+  },
+
+  // 在指定文件夹下创建子文件夹
+  async createFolder(
+    parentId: string,
+    title: string,
+  ): Promise<AppBookmarkNode> {
+    const node = await chrome.bookmarks.create({ parentId, title });
+    return toAppNode(node);
+  },
+
+  // 更新书签标题和 URL
+  async updateBookmark(
+    id: string,
+    title: string,
+    url: string,
+  ): Promise<AppBookmarkNode> {
+    const node = await chrome.bookmarks.update(id, { title, url });
+    return toAppNode(node);
+  },
+
+  // 重命名（仅修改标题，适用于文件夹和书签）
+  async rename(id: string, newTitle: string): Promise<AppBookmarkNode> {
+    const node = await chrome.bookmarks.update(id, { title: newTitle });
+    return toAppNode(node);
+  },
+
+  // 删除单个书签
+  async remove(id: string): Promise<void> {
+    await chrome.bookmarks.remove(id);
+  },
+
+  // 递归删除文件夹及其子内容
+  async removeTree(id: string): Promise<void> {
+    await chrome.bookmarks.removeTree(id);
+  },
+
+  // 批量删除（自动判断书签/文件夹选择对应 API）
+  async deleteItems(ids: string[], nodeMap: Map<string, AppBookmarkNode>): Promise<void> {
+    for (const id of ids) {
+      const node = nodeMap.get(id);
+      if (!node) continue;
+      if (node.type === "folder") {
+        await chrome.bookmarks.removeTree(id);
+      } else {
+        await chrome.bookmarks.remove(id);
+      }
+    }
+  },
+
   getPathToRoot,
 
-  // 注册外部变更监听，返回取消函数
   onExternalChange(callback: () => void): () => void {
     const events = [
       chrome.bookmarks.onCreated,
