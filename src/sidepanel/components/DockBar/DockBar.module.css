@@ -1,0 +1,192 @@
+.dockBar {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  width: 90%;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 8px 16px;
+  min-height: 72px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  transition:
+    transform 300ms ease-out,
+    opacity 300ms ease-out;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 100;
+}
+
+.dockBarVisible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+.dockBarDropActive {
+  border: 2px solid var(--color-primary);
+  min-height: 80px;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.itemsContainer {
+  flex: 1;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px 0;
+  scrollbar-width: thin;
+}
+
+.itemsContainer::-webkit-scrollbar {
+  height: 4px;
+}
+
+.itemsContainer::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 2px;
+}
+
+.itemsContainer::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-neutral);
+}
+
+.dockItem {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f7;
+  border-radius: 8px;
+  cursor: grab;
+  position: relative;
+  transition:
+    background-color 0.15s,
+    transform 0.15s;
+  user-select: none;
+}
+
+.dockItem:hover {
+  background: #eef2ff;
+}
+
+.dockItem:active {
+  cursor: grabbing;
+}
+
+.dockItemDragging {
+  opacity: 0.5;
+  background: #eef2ff;
+}
+
+.itemIcon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.itemFavicon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.itemFallbackIcon {
+  font-size: 24px;
+}
+
+.folderIcon {
+  font-size: 24px;
+}
+
+.itemTitle {
+  font-size: 11px;
+  color: var(--color-text-primary);
+  max-width: 48px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+  margin-top: 2px;
+}
+
+.removeButton {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.15s,
+    background-color 0.15s;
+  color: var(--color-neutral);
+  font-size: 12px;
+  padding: 0;
+}
+
+.dockItem:hover .removeButton {
+  opacity: 1;
+}
+
+.removeButton:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-error);
+}
+
+.buttonGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.actionButton {
+  width: 72px;
+  height: 32px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.dropHint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(99, 102, 241, 0.08);
+  border: 2px dashed var(--color-primary);
+  border-radius: 8px;
+  margin: 8px 16px;
+  color: var(--color-primary);
+  font-size: 14px;
+  font-weight: 500;
+  pointer-events: none;
+}
+
+.emptyHint {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  padding: 0 8px;
+}

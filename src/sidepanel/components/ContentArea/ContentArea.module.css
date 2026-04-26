@@ -135,6 +135,14 @@
   opacity: 0.4;
 }
 
+/* 已暂存到 Dock 的项目样式 */
+.itemDocked {
+  opacity: 0.45;
+  filter: grayscale(0.3);
+  border: 2px dashed var(--color-primary);
+  border-radius: 8px;
+}
+
 /* 被剪切的项目虚化样式 */
 .itemCut {
   opacity: 0.45;

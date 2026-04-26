@@ -6,11 +6,14 @@ import {
   useBookmarkContext,
 } from "./context/BookmarkContext";
 import { ViewSettingsProvider } from "./context/ViewSettingsContext";
+import { DockProvider, useDockContext } from "./context/DockContext";
+import { GlobalDndProvider, useGlobalDnd } from "./context/GlobalDndContext";
 import AddressBar from "./components/AddressBar";
 import Toolbar from "./components/Toolbar";
 import SearchBar from "./components/SearchBar";
 import ContentArea from "./components/ContentArea";
 import StatusBar from "./components/StatusBar";
+import DockBar from "./components/DockBar";
 import ContextMenu from "./components/ContextMenu";
 import CreateBookmarkDialog from "./components/Dialogs/CreateBookmarkDialog";
 import CreateFolderDialog from "./components/Dialogs/CreateFolderDialog";
@@ -21,6 +24,8 @@ import type { AppBookmarkNode } from "@/types/bookmark";
 
 function AppContent() {
   const ctx = useBookmarkContext();
+  const dockCtx = useDockContext();
+  const globalDnd = useGlobalDnd();
   const { selectedIds, index, currentNodeId } = ctx;
 
   // 搜索状态
@@ -161,6 +166,9 @@ function AppContent() {
     setCreateFolderOpen(true);
   }, []);
 
+  // 已暂存项目的 ID 集合
+  const dockedIds = new Set(dockCtx.items.map((item) => item.id));
+
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
       <AddressBar />
@@ -192,10 +200,19 @@ function AppContent() {
         searchResults={isSearchActive ? searchResults : undefined}
         searchQuery={isSearchActive ? query : undefined}
         searchActive={isSearchActive}
+        dockedIds={dockedIds}
       />
       <StatusBar
         searchActive={isSearchActive}
         searchResultCount={searchResults.length}
+      />
+      <DockBar
+        items={dockCtx.items}
+        isDragging={globalDnd.isDragging}
+        onRemoveItem={dockCtx.removeItem}
+        onPlaceAll={dockCtx.placeAll}
+        onCancelAll={dockCtx.clearAll}
+        canPlace={dockCtx.canPlace}
       />
 
       {/* 右键上下文菜单 */}
@@ -247,13 +264,34 @@ function AppContent() {
 }
 
 export default function App() {
+  // 需要在 GlobalDndProvider 外部获取 dockCtx
+  // 所以我们创建一个内部组件来处理拖拽逻辑
   return (
     <ConfigProvider theme={genesisTheme}>
       <ViewSettingsProvider>
         <BookmarkProvider>
-          <AppContent />
+          <DockProvider>
+            <AppWithDnd />
+          </DockProvider>
         </BookmarkProvider>
       </ViewSettingsProvider>
     </ConfigProvider>
+  );
+}
+
+function AppWithDnd() {
+  const dockCtx = useDockContext();
+
+  const handleDropToDock = useCallback(
+    (ids: string[]) => {
+      dockCtx.addItems(ids);
+    },
+    [dockCtx],
+  );
+
+  return (
+    <GlobalDndProvider onDropToDock={handleDropToDock}>
+      <AppContent />
+    </GlobalDndProvider>
   );
 }

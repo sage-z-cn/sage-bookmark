@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Spin } from "antd";
 import { useBookmarkContext } from "@/sidepanel/context/BookmarkContext";
 import { useViewSettings } from "@/sidepanel/context/ViewSettingsContext";
@@ -16,6 +16,7 @@ interface ContentAreaProps {
   searchResults?: SearchResult[];
   searchQuery?: string;
   searchActive?: boolean;
+  dockedIds?: Set<string>;
 }
 
 export default function ContentArea({
@@ -25,6 +26,7 @@ export default function ContentArea({
   searchResults,
   searchQuery,
   searchActive = false,
+  dockedIds,
 }: ContentAreaProps) {
   const {
     loading,
@@ -44,16 +46,13 @@ export default function ContentArea({
   const containerRef = useRef<HTMLDivElement>(null);
 
   // 框选回调
-  const handleRubberBandSelection = useCallback(
-    (ids: Set<string>) => {
-      if (ids.size === 0) {
-        clearSelection();
-      } else {
-        setSelectedIds(ids);
-      }
-    },
-    [clearSelection, setSelectedIds],
-  );
+  const handleRubberBandSelection = (ids: Set<string>) => {
+    if (ids.size === 0) {
+      clearSelection();
+    } else {
+      setSelectedIds(ids);
+    }
+  };
 
   const { rect, handlers } = useRubberBand({
     containerRef,
@@ -140,6 +139,7 @@ export default function ContentArea({
                 item={item}
                 selected={selectedIds.has(item.id)}
                 cut={cutIds.has(item.id)}
+                docked={dockedIds?.has(item.id)}
                 onSelect={(multi, range) => toggleSelect(item.id, multi, range)}
                 onDoubleClick={() => handleDoubleClick(item)}
                 renaming={renamingFolderId === item.id}
@@ -157,6 +157,7 @@ export default function ContentArea({
                 item={item}
                 selected={selectedIds.has(item.id)}
                 cut={cutIds.has(item.id)}
+                docked={dockedIds?.has(item.id)}
                 onSelect={(multi, range) => toggleSelect(item.id, multi, range)}
                 onDoubleClick={() => handleDoubleClick(item)}
                 renaming={renamingFolderId === item.id}

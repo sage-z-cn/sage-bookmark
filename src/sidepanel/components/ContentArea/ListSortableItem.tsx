@@ -8,6 +8,7 @@ interface ListSortableItemProps {
   item: AppBookmarkNode;
   selected: boolean;
   cut?: boolean;
+  docked?: boolean;
   onSelect: (multi: boolean, range: boolean) => void;
   onDoubleClick: () => void;
   renaming?: boolean;
@@ -20,6 +21,7 @@ export default function ListSortableItem({
   item,
   selected,
   cut = false,
+  docked = false,
   onSelect,
   onDoubleClick,
   renaming = false,
@@ -34,12 +36,21 @@ export default function ListSortableItem({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: item.id });
+  } = useSortable({
+    id: item.id,
+    data: {
+      source: "content",
+      type: item.type,
+      title: item.title,
+      url: item.url,
+      faviconUrl: item.faviconUrl,
+    },
+  });
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.4 : 1,
+    opacity: isDragging ? 0.4 : docked ? 0.45 : 1,
   };
 
   return (
@@ -48,7 +59,7 @@ export default function ListSortableItem({
       style={style}
       {...attributes}
       {...listeners}
-      className={isDragging ? styles.draggingItem : undefined}
+      className={`${isDragging ? styles.draggingItem : ""} ${docked && !isDragging ? styles.itemDocked : ""}`}
     >
       <ListItem
         item={item}
