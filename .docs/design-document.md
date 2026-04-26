@@ -72,7 +72,6 @@ Sage Bookmark
 │   │   └── 视图切换（大图标/列表）
 │   ├── 主体内容区域
 │   │   ├── 项目展示（大图标/列表视图）
-│   │   ├── 排序（名称/日期/类型）
 │   │   ├── 单选 / 多选 / 框选
 │   │   ├── 拖拽移动
 │   │   └── 双击打开
@@ -130,17 +129,6 @@ Sage Bookmark
 | 双击       | 打开书签（新标签页）或进入文件夹                 |
 | 拖拽       | 拖动项目到目标文件夹或位置实现移动               |
 | 右键       | 弹出上下文菜单                                   |
-
-#### 2.2.4 排序功能
-
-| 排序维度 | 说明                             |
-| -------- | -------------------------------- |
-| 名称     | 按标题字母序（支持中文拼音排序） |
-| 日期     | 按添加时间排序                   |
-| 类型     | 文件夹优先/书签优先              |
-| URL      | 按域名排序                       |
-
-排序支持升序/降序切换，排序状态持久化到 localStorage。
 
 #### 2.2.5 Dock 暂存栏
 
@@ -306,7 +294,6 @@ Code           → JetBrains Mono (Google Fonts) — 用于 URL 显示
 └──────┴──────────────────┴──────────────────────┴────────────┴──────────┘
 ```
 
-- 表头可点击排序，显示排序方向指示器
 - 行高：48px，hover 背景变化
 - URL 列截断显示域名
 - 使用 Ant Design `Table` 组件作为基础
@@ -763,11 +750,10 @@ sage-bookmark/
 │   │   │   ├── useClipboard.ts     # 剪切板操作
 │   │   │   ├── useDragDrop.ts      # 拖拽逻辑
 │   │   │   ├── useMarquee.ts       # 框选逻辑
-│   │   │   ├── useDock.ts          # Dock 暂存栏状态管理
-│   │   │   └── useSort.ts          # 排序逻辑
+│   │   │   └── useDock.ts          # Dock 暂存栏状态管理
 │   │   ├── context/                # React Context
 │   │   │   ├── BookmarkContext.tsx  # 书签状态上下文
-│   │   │   └── SettingsContext.tsx  # 设置（视图模式、排序等）
+│   │   │   └── SettingsContext.tsx  # 设置（视图模式等）
 │   │   ├── services/               # 服务层
 │   │   │   ├── bookmarkService.ts  # Chrome Bookmarks API 封装
 │   │   │   └── faviconService.ts   # Favicon 获取服务
@@ -853,8 +839,6 @@ interface BookmarkState {
     items: BookmarkTreeNode[];
   } | null;
   viewMode: "grid" | "list"; // 视图模式
-  sortField: "name" | "date" | "type" | "url";
-  sortOrder: "asc" | "desc";
   searchQuery: string;
   searchResults: BookmarkTreeNode[] | null; // null 表示非搜索模式
 }
@@ -984,7 +968,7 @@ interface DisplayItem {
 // 内存索引结构（加速查询）
 interface BookmarkIndex {
   nodeMap: Map<string, AppBookmarkNode>; // id → node
-  childrenMap: Map<string, AppBookmarkNode[]>; // parentId → sorted children
+  childrenMap: Map<string, AppBookmarkNode[]>; // parentId → children
   rootNodes: AppBookmarkNode[]; // 根节点列表
 }
 ```
@@ -995,8 +979,6 @@ interface BookmarkIndex {
 // 用户设置（持久化到 chrome.storage.local）
 interface UserSettings {
   viewMode: "grid" | "list";
-  sortField: "name" | "date" | "type" | "url";
-  sortOrder: "asc" | "desc";
   lastVisitedFolderId: string; // 上次浏览的文件夹
   language: "zh-CN" | "en-US";
 }
@@ -1038,13 +1020,12 @@ interface ClipboardData {
 
 ### 6.2 事件监听
 
-| 事件                                   | 用途                           |
-| -------------------------------------- | ------------------------------ |
-| `chrome.bookmarks.onCreated`           | 外部创建书签时同步更新内存索引 |
-| `chrome.bookmarks.onRemoved`           | 外部删除书签时同步更新         |
-| `chrome.bookmarks.onChanged`           | 外部修改书签时同步更新         |
-| `chrome.bookmarks.onMoved`             | 外部移动书签时同步更新         |
-| `chrome.bookmarks.onChildrenReordered` | 子节点排序变化时同步           |
+| 事件                         | 用途                           |
+| ---------------------------- | ------------------------------ |
+| `chrome.bookmarks.onCreated` | 外部创建书签时同步更新内存索引 |
+| `chrome.bookmarks.onRemoved` | 外部删除书签时同步更新         |
+| `chrome.bookmarks.onChanged` | 外部修改书签时同步更新         |
+| `chrome.bookmarks.onMoved`   | 外部移动书签时同步更新         |
 
 ### 6.3 Service 层接口设计
 
@@ -1096,10 +1077,10 @@ class BookmarkService {
 
 ### 6.4 chrome.storage API 使用
 
-| 存储区域               | 用途                   | 数据                           |
-| ---------------------- | ---------------------- | ------------------------------ |
-| `chrome.storage.local` | 用户设置               | UserSettings                   |
-| `chrome.storage.sync`  | 跨设备同步设置（可选） | viewMode, sortField, sortOrder |
+| 存储区域               | 用途                   | 数据         |
+| ---------------------- | ---------------------- | ------------ |
+| `chrome.storage.local` | 用户设置               | UserSettings |
+| `chrome.storage.sync`  | 跨设备同步设置（可选） | viewMode     |
 
 ---
 
@@ -1209,7 +1190,6 @@ export default defineManifest({
 | `useSelection`          | 单选、多选、范围选、框选逻辑                           |
 | `useNavigation`         | 前进/后退历史栈操作                                    |
 | `useBreadcrumbOverflow` | 溢出检测、片段宽度计算、省略位确定、边界情况           |
-| `useSort`               | 各字段排序、升降序切换                                 |
 | `useClipboard`          | 剪切/复制/粘贴状态流转                                 |
 | `useDock`               | 暂存/取回/全部取出、去重校验、持久化恢复、循环移动校验 |
 
@@ -1226,7 +1206,6 @@ export default defineManifest({
 | E2E-07  | 框选           | 在空白区域拖动绘制选择框                       | 框内项目全部选中                  |
 | E2E-08  | 编辑书签       | 选中书签 → F2 → Modal 中修改标题和 URL → 保存  | 标题和 URL 更新成功               |
 | E2E-08a | 编辑文件夹     | 选中文件夹 → F2 → 修改名称 → 回车              | 名称更新成功                      |
-| E2E-09  | 排序           | 点击表头「名称」→ 切换升降序                   | 列表按名称正确排序                |
 | E2E-10  | 大数据量       | 加载 10,000 条书签 → 浏览/搜索                 | 操作流畅，无卡顿                  |
 | E2E-11  | Dock 暂存-拖入 | 拖拽书签到 Dock 栏                             | Dock 栏显示，书签出现在暂存列表   |
 | E2E-12  | Dock 暂存-拖出 | 从 Dock 栏拖出项目到新目录                     | 书签移动到新目录，Dock 栏移除该项 |
@@ -1336,7 +1315,7 @@ Edge：
 | **P1 — 核心浏览**   | 地址栏、面包屑导航、内容区域、文件夹浏览、双击进入、状态栏                     | 可浏览书签树     |
 | **P2 — CRUD 操作**  | 新建（文件夹/书签）、删除（含确认）、编辑（书签 Modal/文件夹行内重命名）、刷新 | 完整的增删改功能 |
 | **P3 — 高级交互**   | 多选、框选、拖拽移动、剪切/复制/粘贴、右键菜单                                 | 资源管理器级交互 |
-| **P4 — 视图与排序** | 大图标/列表视图切换、排序功能、视图状态持久化                                  | 双视图模式       |
+| **P4 — 视图模式**   | 大图标/列表视图切换、视图状态持久化                                            | 双视图模式       |
 | **P5 — 搜索**       | 搜索栏、模糊匹配、搜索结果高亮、搜索范围控制                                   | 可用搜索功能     |
 | **P6 — 性能优化**   | 虚拟滚动、内存索引优化、大数据量测试                                           | 性能达标         |
 | **P7 — 完善与发布** | 撤销功能、分享功能、Edge 兼容性测试、商店素材准备                              | 可发布版本       |
