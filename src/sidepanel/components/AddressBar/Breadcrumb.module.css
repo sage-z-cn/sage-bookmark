@@ -5,6 +5,16 @@
   overflow: hidden;
   gap: 0;
   flex: 1;
+  position: relative;
+}
+
+/* 测量层：不可见但占据空间用于宽度计算 */
+.measureLayer {
+  display: flex;
+  align-items: center;
+  visibility: hidden;
+  position: absolute;
+  pointer-events: none;
 }
 
 .segment {
@@ -32,7 +42,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 160px;
-  transition: color 0.15s, background-color 0.15s;
+  transition:
+    color 0.15s,
+    background-color 0.15s;
 }
 
 .crumb:hover {
@@ -49,4 +61,32 @@
 .crumbActive:hover {
   color: var(--color-text-primary);
   background-color: transparent;
+}
+
+/* 省略号按钮 */
+.ellipsis {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  padding: 4px 8px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+  transition:
+    color 0.15s,
+    background-color 0.15s;
+}
+
+.ellipsis:hover {
+  color: var(--color-primary);
+  background-color: #f5f5f7;
+}
+
+/* 下拉面板中当前层级高亮 */
+.menuItemActive {
+  color: var(--color-primary) !important;
+  font-weight: 500;
 }
