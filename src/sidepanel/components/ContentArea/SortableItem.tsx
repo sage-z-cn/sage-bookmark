@@ -52,7 +52,7 @@ export default function SortableItem({
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.4 : docked ? 0.45 : 1,
+    opacity: isDragging ? 0 : docked ? 0.45 : 1,
   };
 
   return (
