@@ -104,10 +104,12 @@
 
 .itemFallbackIcon {
   font-size: 24px;
+  color: var(--color-primary);
 }
 
 .folderIcon {
   font-size: 24px;
+  color: #f59e0b;
 }
 
 .itemTitle {

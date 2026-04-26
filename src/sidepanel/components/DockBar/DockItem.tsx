@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { BookOutlined } from "@ant-design/icons";
+import { BookOutlined, FolderOutlined } from "@ant-design/icons";
 import type { DockItem as DockItemType } from "@/sidepanel/hooks/useDock";
 import { truncateUrl } from "@/sidepanel/utils/format";
 import styles from "./DockBar.module.css";
@@ -27,7 +27,7 @@ const DockItem = memo(function DockItem({ item, onRemove }: DockItemProps) {
       </button>
       <div className={styles.itemIcon}>
         {item.type === "folder" ? (
-          <span className={styles.folderIcon}>📁</span>
+          <FolderOutlined className={styles.folderIcon} />
         ) : item.faviconUrl ? (
           <img
             src={item.faviconUrl}
