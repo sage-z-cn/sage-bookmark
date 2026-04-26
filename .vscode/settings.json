@@ -1,0 +1,31 @@
+{
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "never",
+    "source.fixAll.eslint": "explicit",
+    "source.fixAll.stylelint": "explicit"
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.expand": false,
+  "explorer.fileNesting.patterns": {
+    ".eslintrc.js": ".eslintignore",
+    "prettier.config.js": ".prettierignore",
+    "stylelint.config.js": ".stylelintignore",
+    "tailwind.config.js": "postcss.config.js",
+    "package.json": "pnpm-lock.yaml"
+  },
+  "workbench.tree.indent": 22,
+  "eslint.validate": ["javascript", "typescript", "javascriptreact", "typescriptreact", "react"],
+  "eslint.nodePath": "./node_modules",
+  "eslint.options": {
+    "overrideConfigFile": "./.eslintrc.js"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}

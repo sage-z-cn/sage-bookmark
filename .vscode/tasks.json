@@ -1,0 +1,31 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "dev",
+      "type": "npm",
+      "script": "dev",
+      "problemMatcher": [],
+      "isBackground": true,
+      "detail": "启动 Vite 开发服务器"
+    },
+    {
+      "label": "build",
+      "type": "npm",
+      "script": "build",
+      "problemMatcher": ["$tsc"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "detail": "TypeScript 类型检查 + Vite 生产构建"
+    },
+    {
+      "label": "preview",
+      "type": "npm",
+      "script": "preview",
+      "problemMatcher": [],
+      "detail": "预览生产构建产物"
+    }
+  ]
+}
