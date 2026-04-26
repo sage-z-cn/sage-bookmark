@@ -7,8 +7,11 @@ import {
   ScissorOutlined,
   CopyOutlined,
   SnippetsOutlined,
+  AppstoreOutlined,
+  UnorderedListOutlined,
 } from "@ant-design/icons";
 import { useBookmarkContext } from "@/sidepanel/context/BookmarkContext";
+import { useViewSettings } from "@/sidepanel/context/ViewSettingsContext";
 import styles from "./Toolbar.module.css";
 
 interface ToolbarProps {
@@ -24,15 +27,10 @@ export default function Toolbar({
   onEdit,
   onDelete,
 }: ToolbarProps) {
-  const { selectedIds, clipboard, cut, copy, paste, canPaste } =
-    useBookmarkContext();
+  const { selectedIds, cut, copy, paste, canPaste } = useBookmarkContext();
+  const { viewMode, setViewMode } = useViewSettings();
   const hasSelection = selectedIds.size > 0;
   const singleSelected = selectedIds.size === 1;
-
-  // 剪切状态指示：被剪切的项目应显示视觉提示
-  const isCutState =
-    clipboard?.action === "cut" &&
-    clipboard.ids.some((id) => selectedIds.has(id));
 
   return (
     <div className={styles.toolbar}>
@@ -107,6 +105,27 @@ export default function Toolbar({
           icon={<DeleteOutlined />}
           disabled={!hasSelection}
           onClick={onDelete}
+        />
+      </Tooltip>
+
+      <div className={styles.spacer} />
+
+      <Tooltip title={viewMode === "grid" ? "大图标模式" : "切换到图标视图"}>
+        <Button
+          type="text"
+          size="small"
+          icon={<AppstoreOutlined />}
+          className={viewMode === "grid" ? styles.viewModeActive : undefined}
+          onClick={() => setViewMode("grid")}
+        />
+      </Tooltip>
+      <Tooltip title={viewMode === "list" ? "详细列表模式" : "切换到列表视图"}>
+        <Button
+          type="text"
+          size="small"
+          icon={<UnorderedListOutlined />}
+          className={viewMode === "list" ? styles.viewModeActive : undefined}
+          onClick={() => setViewMode("list")}
         />
       </Tooltip>
     </div>

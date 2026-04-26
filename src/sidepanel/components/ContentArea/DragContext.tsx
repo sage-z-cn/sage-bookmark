@@ -10,17 +10,19 @@ import {
   type DragEndEvent,
   type DragOverEvent,
 } from "@dnd-kit/core";
-import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
+import {
+  SortableContext,
+  rectSortingStrategy,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { useBookmarkContext } from "@/sidepanel/context/BookmarkContext";
 import { truncateUrl } from "@/sidepanel/utils/format";
-import SortableItem from "./SortableItem";
+import type { ViewMode } from "@/sidepanel/context/ViewSettingsContext";
 import styles from "./ContentArea.module.css";
 
 interface DragContextProps {
   children: ReactNode;
-  renamingFolderId?: string | null;
-  onRenameSubmit?: (newTitle: string) => void;
-  onRenameCancel?: () => void;
+  viewMode: ViewMode;
 }
 
 // 拖拽数据
@@ -31,18 +33,10 @@ export interface DragItemData {
   url?: string;
 }
 
-export default function DragContext({
-  children,
-  renamingFolderId,
-  onRenameSubmit,
-  onRenameCancel,
-}: DragContextProps) {
+export default function DragContext({ children, viewMode }: DragContextProps) {
   const {
     currentItems,
     selectedIds,
-    toggleSelect,
-    clearSelection,
-    navigateTo,
     moveItems,
     optimisticReorder,
     optimisticMoveIntoFolder,
@@ -51,7 +45,6 @@ export default function DragContext({
 
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeData, setActiveData] = useState<DragItemData | null>(null);
-  const [dropTargetId, setDropTargetId] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -60,6 +53,9 @@ export default function DragContext({
       },
     }),
   );
+
+  const strategy =
+    viewMode === "list" ? verticalListSortingStrategy : rectSortingStrategy;
 
   const sortableIds = currentItems.map((item) => item.id);
 
@@ -86,31 +82,17 @@ export default function DragContext({
     [currentItems, selectedIds, setSelectedIds],
   );
 
-  const handleDragOver = useCallback(
-    (event: DragOverEvent) => {
-      const { over } = event;
-      if (!over) {
-        setDropTargetId(null);
-        return;
-      }
-      const overId = over.id as string;
-      const overItem = currentItems.find((i) => i.id === overId);
-      // 只在文件夹上高亮
-      if (overItem?.type === "folder") {
-        setDropTargetId(overId);
-      } else {
-        setDropTargetId(null);
-      }
-    },
-    [currentItems],
-  );
+  const handleDragOver = useCallback((event: DragOverEvent) => {
+    const { over } = event;
+    if (!over) return;
+    // 仅在文件夹上允许拖入悬停
+  }, []);
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       const { active, over } = event;
       setActiveId(null);
       setActiveData(null);
-      setDropTargetId(null);
 
       if (!over) return;
 
@@ -147,7 +129,6 @@ export default function DragContext({
   const handleDragCancel = useCallback(() => {
     setActiveId(null);
     setActiveData(null);
-    setDropTargetId(null);
   }, []);
 
   return (
@@ -159,7 +140,7 @@ export default function DragContext({
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <SortableContext items={sortableIds} strategy={rectSortingStrategy}>
+      <SortableContext items={sortableIds} strategy={strategy}>
         {children}
       </SortableContext>
       <DragOverlay dropAnimation={null}>

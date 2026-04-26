@@ -5,6 +5,7 @@ import {
   BookmarkProvider,
   useBookmarkContext,
 } from "./context/BookmarkContext";
+import { ViewSettingsProvider } from "./context/ViewSettingsContext";
 import AddressBar from "./components/AddressBar";
 import Toolbar from "./components/Toolbar";
 import ContentArea from "./components/ContentArea";
@@ -188,9 +189,11 @@ function AppContent() {
 export default function App() {
   return (
     <ConfigProvider theme={genesisTheme}>
-      <BookmarkProvider>
-        <AppContent />
-      </BookmarkProvider>
+      <ViewSettingsProvider>
+        <BookmarkProvider>
+          <AppContent />
+        </BookmarkProvider>
+      </ViewSettingsProvider>
     </ConfigProvider>
   );
 }

@@ -19,3 +19,12 @@
   background: var(--color-border);
   margin: 0 4px;
 }
+
+.spacer {
+  flex: 1;
+}
+
+.viewModeActive {
+  color: var(--color-primary);
+  background: rgba(99, 102, 241, 0.08);
+}

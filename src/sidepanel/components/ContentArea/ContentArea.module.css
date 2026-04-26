@@ -134,3 +134,126 @@
 .draggingItem {
   opacity: 0.4;
 }
+
+/* 列表视图 */
+.listContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.listHeader {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.listHeaderName {
+  flex: 2;
+  min-width: 0;
+}
+
+.listHeaderUrl {
+  flex: 2;
+  min-width: 0;
+}
+
+.listHeaderDate {
+  width: 100px;
+  flex-shrink: 0;
+}
+
+.listRow {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: background-color 0.15s;
+  user-select: none;
+}
+
+.listRow:hover {
+  background: rgba(99, 102, 241, 0.04);
+}
+
+.listRowSelected {
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.listRowSelected:hover {
+  background: rgba(99, 102, 241, 0.12);
+}
+
+.listCellName {
+  flex: 2;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: var(--color-text-primary);
+}
+
+.listName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.listCellUrl {
+  flex: 2;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-left: 4px;
+}
+
+.listCellDate {
+  width: 100px;
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 500px) {
+  .listHeaderUrl,
+  .listHeaderDate,
+  .listCellUrl,
+  .listCellDate {
+    display: none;
+  }
+
+  .listHeaderName,
+  .listCellName {
+    flex: 1;
+  }
+}
+
+.listFavicon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  border-radius: 2px;
+}
+
+.listRenameInput {
+  font-size: 13px;
+  color: var(--color-text-primary);
+  width: 100%;
+  border: 1px solid var(--color-primary);
+  border-radius: 4px;
+  outline: none;
+  padding: 2px 6px;
+  background: var(--color-surface);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}

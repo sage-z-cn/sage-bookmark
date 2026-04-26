@@ -290,7 +290,7 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
   // 剪贴板：粘贴
   const paste = useCallback(async () => {
     if (!clipboard || !index) return;
-    const { action, ids, sourceParentId } = clipboard;
+    const { action, ids } = clipboard;
     if (action === "cut") {
       // 防止移动到自身子目录
       for (const id of ids) {

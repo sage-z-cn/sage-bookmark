@@ -1,7 +1,9 @@
 import { useCallback, useRef } from "react";
 import { Spin } from "antd";
 import { useBookmarkContext } from "@/sidepanel/context/BookmarkContext";
+import { useViewSettings } from "@/sidepanel/context/ViewSettingsContext";
 import SortableItem from "./SortableItem";
+import ListSortableItem from "./ListSortableItem";
 import DragContext from "./DragContext";
 import { useRubberBand } from "./useRubberBand";
 import styles from "./ContentArea.module.css";
@@ -26,6 +28,7 @@ export default function ContentArea({
     navigateTo,
     setSelectedIds,
   } = useBookmarkContext();
+  const { viewMode } = useViewSettings();
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -68,25 +71,43 @@ export default function ContentArea({
 
   return (
     <div ref={containerRef} className={styles.contentArea} {...handlers}>
-      <DragContext
-        renamingFolderId={renamingFolderId}
-        onRenameSubmit={onRenameSubmit}
-        onRenameCancel={onRenameCancel}
-      >
-        <div className={styles.grid}>
-          {currentItems.map((item) => (
-            <SortableItem
-              key={item.id}
-              item={item}
-              selected={selectedIds.has(item.id)}
-              onSelect={(multi, range) => toggleSelect(item.id, multi, range)}
-              onDoubleClick={() => handleDoubleClick(item)}
-              renaming={renamingFolderId === item.id}
-              onRenameSubmit={onRenameSubmit}
-              onRenameCancel={onRenameCancel}
-            />
-          ))}
-        </div>
+      <DragContext viewMode={viewMode}>
+        {viewMode === "list" ? (
+          <div className={styles.listContainer}>
+            <div className={styles.listHeader}>
+              <div className={styles.listHeaderName}>名称</div>
+              <div className={styles.listHeaderUrl}>URL</div>
+              <div className={styles.listHeaderDate}>添加日期</div>
+            </div>
+            {currentItems.map((item) => (
+              <ListSortableItem
+                key={item.id}
+                item={item}
+                selected={selectedIds.has(item.id)}
+                onSelect={(multi, range) => toggleSelect(item.id, multi, range)}
+                onDoubleClick={() => handleDoubleClick(item)}
+                renaming={renamingFolderId === item.id}
+                onRenameSubmit={onRenameSubmit}
+                onRenameCancel={onRenameCancel}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className={styles.grid}>
+            {currentItems.map((item) => (
+              <SortableItem
+                key={item.id}
+                item={item}
+                selected={selectedIds.has(item.id)}
+                onSelect={(multi, range) => toggleSelect(item.id, multi, range)}
+                onDoubleClick={() => handleDoubleClick(item)}
+                renaming={renamingFolderId === item.id}
+                onRenameSubmit={onRenameSubmit}
+                onRenameCancel={onRenameCancel}
+              />
+            ))}
+          </div>
+        )}
       </DragContext>
       {/* 框选矩形 */}
       {rect && (
