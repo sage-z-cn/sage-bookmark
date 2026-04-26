@@ -10,6 +10,7 @@ import styles from "./ContentArea.module.css";
 interface BookmarkItemProps {
   item: AppBookmarkNode;
   selected: boolean;
+  cut?: boolean;
   onSelect: (multi: boolean, range: boolean) => void;
   onDoubleClick: () => void;
   highlightQuery?: string;
@@ -18,6 +19,7 @@ interface BookmarkItemProps {
 export default function BookmarkItem({
   item,
   selected,
+  cut = false,
   onSelect,
   onDoubleClick,
   highlightQuery,
@@ -44,7 +46,7 @@ export default function BookmarkItem({
       mouseEnterDelay={0.8}
     >
       <div
-        className={`${styles.item} ${selected ? styles.itemSelected : ""}`}
+        className={`${styles.item} ${selected ? styles.itemSelected : ""} ${cut ? styles.itemCut : ""}`}
         data-item-id={item.id}
         onClick={(e) => {
           e.stopPropagation();

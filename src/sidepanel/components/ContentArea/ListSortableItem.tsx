@@ -7,6 +7,7 @@ import styles from "./ContentArea.module.css";
 interface ListSortableItemProps {
   item: AppBookmarkNode;
   selected: boolean;
+  cut?: boolean;
   onSelect: (multi: boolean, range: boolean) => void;
   onDoubleClick: () => void;
   renaming?: boolean;
@@ -18,6 +19,7 @@ interface ListSortableItemProps {
 export default function ListSortableItem({
   item,
   selected,
+  cut = false,
   onSelect,
   onDoubleClick,
   renaming = false,
@@ -51,6 +53,7 @@ export default function ListSortableItem({
       <ListItem
         item={item}
         selected={selected}
+        cut={cut}
         onSelect={onSelect}
         onDoubleClick={onDoubleClick}
         renaming={renaming}

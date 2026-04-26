@@ -10,6 +10,7 @@ import styles from "./ContentArea.module.css";
 interface ListItemProps {
   item: AppBookmarkNode;
   selected: boolean;
+  cut?: boolean;
   onSelect: (multi: boolean, range: boolean) => void;
   onDoubleClick: () => void;
   renaming?: boolean;
@@ -41,6 +42,7 @@ function FavIcon({ url }: { url?: string }) {
 export default function ListItem({
   item,
   selected,
+  cut = false,
   onSelect,
   onDoubleClick,
   renaming = false,
@@ -96,7 +98,7 @@ export default function ListItem({
       mouseEnterDelay={0.8}
     >
       <div
-        className={`${styles.listRow} ${selected ? styles.listRowSelected : ""}`}
+        className={`${styles.listRow} ${selected ? styles.listRowSelected : ""} ${cut ? styles.listRowCut : ""}`}
         data-item-id={item.id}
         onClick={(e) => {
           e.stopPropagation();

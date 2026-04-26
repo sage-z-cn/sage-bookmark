@@ -29,12 +29,14 @@ export default function ContentArea({
   const {
     loading,
     currentItems,
+    currentNodeId,
     selectedIds,
     toggleSelect,
     clearSelection,
     navigateTo,
     setSelectedIds,
     selectAll,
+    clipboard,
   } = useBookmarkContext();
   const { viewMode } = useViewSettings();
 
@@ -62,6 +64,12 @@ export default function ContentArea({
   const displayItems = isSearchMode
     ? searchResults.map((r) => r.item)
     : currentItems;
+
+  // 判断当前项是否被剪切（同目录下才显示虚化）
+  const cutIds =
+    clipboard?.action === "cut" && clipboard.sourceParentId === currentNodeId
+      ? new Set(clipboard.ids)
+      : new Set<string>();
 
   if (loading) {
     return (
@@ -119,6 +127,7 @@ export default function ContentArea({
                 key={item.id}
                 item={item}
                 selected={selectedIds.has(item.id)}
+                cut={cutIds.has(item.id)}
                 onSelect={(multi, range) => toggleSelect(item.id, multi, range)}
                 onDoubleClick={() => handleDoubleClick(item)}
                 renaming={renamingFolderId === item.id}
@@ -135,6 +144,7 @@ export default function ContentArea({
                 key={item.id}
                 item={item}
                 selected={selectedIds.has(item.id)}
+                cut={cutIds.has(item.id)}
                 onSelect={(multi, range) => toggleSelect(item.id, multi, range)}
                 onDoubleClick={() => handleDoubleClick(item)}
                 renaming={renamingFolderId === item.id}

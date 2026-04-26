@@ -8,6 +8,7 @@ import styles from "./ContentArea.module.css";
 interface FolderItemProps {
   item: AppBookmarkNode;
   selected: boolean;
+  cut?: boolean;
   onSelect: (multi: boolean, range: boolean) => void;
   onDoubleClick: () => void;
   renaming?: boolean;
@@ -19,6 +20,7 @@ interface FolderItemProps {
 export default function FolderItem({
   item,
   selected,
+  cut = false,
   onSelect,
   onDoubleClick,
   renaming = false,
@@ -67,7 +69,7 @@ export default function FolderItem({
   if (renaming) {
     return (
       <div
-        className={`${styles.item} ${selected ? styles.itemSelected : ""}`}
+        className={`${styles.item} ${selected ? styles.itemSelected : ""} ${cut ? styles.itemCut : ""}`}
         data-item-id={item.id}
       >
         <div className={styles.itemIcon}>
@@ -89,7 +91,7 @@ export default function FolderItem({
   return (
     <Tooltip title={item.title} mouseEnterDelay={0.8}>
       <div
-        className={`${styles.item} ${selected ? styles.itemSelected : ""}`}
+        className={`${styles.item} ${selected ? styles.itemSelected : ""} ${cut ? styles.itemCut : ""}`}
         data-item-id={item.id}
         onClick={(e) => {
           e.stopPropagation();

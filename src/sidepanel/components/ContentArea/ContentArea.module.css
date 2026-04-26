@@ -135,6 +135,17 @@
   opacity: 0.4;
 }
 
+/* 被剪切的项目虚化样式 */
+.itemCut {
+  opacity: 0.45;
+  filter: grayscale(0.6);
+}
+
+.listRowCut {
+  opacity: 0.45;
+  filter: grayscale(0.6);
+}
+
 /* 列表视图 */
 .listContainer {
   display: flex;

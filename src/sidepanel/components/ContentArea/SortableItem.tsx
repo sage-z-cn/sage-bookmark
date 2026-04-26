@@ -8,6 +8,7 @@ import styles from "./ContentArea.module.css";
 interface SortableItemProps {
   item: AppBookmarkNode;
   selected: boolean;
+  cut?: boolean;
   onSelect: (multi: boolean, range: boolean) => void;
   onDoubleClick: () => void;
   renaming?: boolean;
@@ -20,6 +21,7 @@ interface SortableItemProps {
 export default function SortableItem({
   item,
   selected,
+  cut = false,
   onSelect,
   onDoubleClick,
   renaming = false,
@@ -54,6 +56,7 @@ export default function SortableItem({
         <FolderItem
           item={item}
           selected={selected}
+          cut={cut}
           onSelect={onSelect}
           onDoubleClick={onDoubleClick}
           renaming={renaming}
@@ -65,6 +68,7 @@ export default function SortableItem({
         <BookmarkItem
           item={item}
           selected={selected}
+          cut={cut}
           onSelect={onSelect}
           onDoubleClick={onDoubleClick}
           highlightQuery={highlightQuery}
