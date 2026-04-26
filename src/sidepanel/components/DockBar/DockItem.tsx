@@ -1,5 +1,7 @@
 import { memo } from "react";
+import { BookOutlined } from "@ant-design/icons";
 import type { DockItem as DockItemType } from "@/sidepanel/hooks/useDock";
+import { truncateUrl } from "@/sidepanel/utils/format";
 import styles from "./DockBar.module.css";
 
 interface DockItemProps {
@@ -8,6 +10,8 @@ interface DockItemProps {
 }
 
 const DockItem = memo(function DockItem({ item, onRemove }: DockItemProps) {
+  const displayTitle = item.title || (item.url ? truncateUrl(item.url) : "");
+
   return (
     <div className={styles.dockItem}>
       <button
@@ -34,11 +38,11 @@ const DockItem = memo(function DockItem({ item, onRemove }: DockItemProps) {
             }}
           />
         ) : (
-          <span className={styles.itemFallbackIcon}>🔗</span>
+          <BookOutlined className={styles.itemFallbackIcon} />
         )}
       </div>
-      <span className={styles.itemTitle} title={item.title}>
-        {item.title}
+      <span className={styles.itemTitle} title={displayTitle}>
+        {displayTitle}
       </span>
     </div>
   );
