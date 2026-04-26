@@ -5,7 +5,10 @@ import {
   BookmarkProvider,
   useBookmarkContext,
 } from "./context/BookmarkContext";
-import { ViewSettingsProvider } from "./context/ViewSettingsContext";
+import {
+  ViewSettingsProvider,
+  useViewSettings,
+} from "./context/ViewSettingsContext";
 import { DockProvider, useDockContext } from "./context/DockContext";
 import { GlobalDndProvider, useGlobalDnd } from "./context/GlobalDndContext";
 import AddressBar from "./components/AddressBar";
@@ -282,6 +285,7 @@ export default function App() {
 function AppWithDnd() {
   const dockCtx = useDockContext();
   const bookmarkCtx = useBookmarkContext();
+  const { viewMode } = useViewSettings();
 
   const handleDropToDock = useCallback(
     (ids: string[]) => {
@@ -317,6 +321,7 @@ function AppWithDnd() {
       onDropToDock={handleDropToDock}
       onReorder={handleReorder}
       onMoveToFolder={handleMoveToFolder}
+      viewMode={viewMode}
     >
       <AppContent />
     </GlobalDndProvider>

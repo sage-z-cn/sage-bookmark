@@ -18,12 +18,32 @@ import {
   type DragOverEvent,
   type UniqueIdentifier,
 } from "@dnd-kit/core";
-import { BookOutlined } from "@ant-design/icons";
+import { BookOutlined, FolderOutlined } from "@ant-design/icons";
 import { getFaviconUrl } from "@/sidepanel/services/faviconService";
 import { truncateUrl } from "@/sidepanel/utils/format";
 
-// 书签图标组件，处理 favicon 加载失败的情况，与 BookmarkItem 保持一致
-function BookmarkIcon({ url }: { url?: string }) {
+// 书签图标组件（用于 DragOverlay 图标视图），使用大图标样式
+function BookmarkIconOverlay({ url }: { url?: string }) {
+  const [error, setError] = useState(false);
+  const faviconSrc = url && !error ? getFaviconUrl(url, 32) : undefined;
+
+  if (faviconSrc) {
+    return (
+      <img
+        src={faviconSrc}
+        alt=""
+        style={{ width: 32, height: 32, borderRadius: 4, flexShrink: 0 }}
+        onError={() => setError(true)}
+      />
+    );
+  }
+
+  // 回退到与 BookmarkItem 相同的 BookOutlined 图标，使用大图标尺寸
+  return <BookOutlined style={{ fontSize: 32, color: "#6366f1" }} />;
+}
+
+// 书签图标组件（用于 DragOverlay 列表视图），使用小图标样式
+function BookmarkIconList({ url }: { url?: string }) {
   const [error, setError] = useState(false);
   const faviconSrc = url && !error ? getFaviconUrl(url, 32) : undefined;
 
@@ -38,7 +58,7 @@ function BookmarkIcon({ url }: { url?: string }) {
     );
   }
 
-  // 回退到与 BookmarkItem 相同的 BookOutlined 图标
+  // 回退到 BookOutlined 图标，使用小图标尺寸
   return <BookOutlined style={{ fontSize: 16, color: "#6366f1" }} />;
 }
 
@@ -82,6 +102,7 @@ interface GlobalDndProviderProps {
   onReorder?: (activeId: string, overId: string) => void;
   onMoveToFolder?: (ids: string[], targetFolderId: string) => void;
   renderOverlay?: (item: DragItemData, count: number) => ReactNode;
+  viewMode?: "grid" | "list";
 }
 
 export const DOCK_DROPPABLE_ID = "dock-drop-zone";
@@ -94,6 +115,7 @@ export function GlobalDndProvider({
   onReorder,
   onMoveToFolder,
   renderOverlay,
+  viewMode = "grid",
 }: GlobalDndProviderProps) {
   const [state, setState] = useState<DragState>({
     isDragging: false,
@@ -211,6 +233,90 @@ export function GlobalDndProvider({
     // 书签名称为空时显示 URL，与 BookmarkItem 保持一致
     const displayTitle = item.title || (item.url ? truncateUrl(item.url) : "");
 
+    // 图标视图样式：大图标在上，名称在下
+    if (viewMode === "grid") {
+      return (
+        <div
+          style={{
+            background: "var(--color-surface, #fff)",
+            border: "2px solid var(--color-primary, #6366f1)",
+            borderRadius: 8,
+            padding: "12px 16px",
+            boxShadow: "0 8px 30px rgba(0,0,0,0.2)",
+            opacity: 0.92,
+            width: 100,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          {/* 大图标区域 - 参考图标视图样式 */}
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {item.type === "folder" ? (
+              // 文件夹使用 Ant Design 的 FolderOutlined 样式颜色
+              <FolderOutlined style={{ fontSize: 40, color: "#F59E0B" }} />
+            ) : (
+              // 书签使用带有错误处理的图标组件
+              <BookmarkIconOverlay url={item.url} />
+            )}
+          </div>
+
+          {/* 名称区域 - 在图标下方 */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              width: "100%",
+              justifyContent: "center",
+            }}
+          >
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 500,
+                color: "var(--color-text-primary, #1e293b)",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                textAlign: "center",
+              }}
+            >
+              {displayTitle}
+            </span>
+            {dragCount > 1 && (
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: "#fff",
+                  background: "var(--color-primary, #6366f1)",
+                  borderRadius: 10,
+                  padding: "1px 6px",
+                  flexShrink: 0,
+                  lineHeight: "16px",
+                  minWidth: 18,
+                  textAlign: "center",
+                }}
+              >
+                {dragCount}
+              </span>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // 列表视图样式：图标在左，名称在右（保持原有样式）
     return (
       <div
         style={{
@@ -228,12 +334,12 @@ export function GlobalDndProvider({
       >
         {item.type === "folder" ? (
           // 文件夹使用 Ant Design 的 FolderOutlined 样式颜色
-          <span style={{ fontSize: 16, flexShrink: 0, color: "#F59E0B" }}>
-            📁
-          </span>
+          <FolderOutlined
+            style={{ fontSize: 16, flexShrink: 0, color: "#F59E0B" }}
+          />
         ) : (
-          // 书签使用带有错误处理的图标组件
-          <BookmarkIcon url={item.url} />
+          // 书签使用小图标组件
+          <BookmarkIconList url={item.url} />
         )}
         <span
           style={{
@@ -267,7 +373,7 @@ export function GlobalDndProvider({
         )}
       </div>
     );
-  }, [state.activeItem, dragCount]);
+  }, [state.activeItem, dragCount, viewMode]);
 
   return (
     <DndContext
