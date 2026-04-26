@@ -9,6 +9,7 @@ import AddressBar from "./components/AddressBar";
 import Toolbar from "./components/Toolbar";
 import ContentArea from "./components/ContentArea";
 import StatusBar from "./components/StatusBar";
+import ContextMenu from "./components/ContextMenu";
 import CreateBookmarkDialog from "./components/Dialogs/CreateBookmarkDialog";
 import CreateFolderDialog from "./components/Dialogs/CreateFolderDialog";
 import EditBookmarkDialog from "./components/Dialogs/EditBookmarkDialog";
@@ -26,6 +27,11 @@ function AppContent() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [renamingFolderId, setRenamingFolderId] = useState<string | null>(null);
 
+  // 子文件夹创建目标
+  const [subfolderParentId, setSubfolderParentId] = useState<string | null>(
+    null,
+  );
+
   // 正在编辑的书签
   const editingBookmarkRef = useRef<AppBookmarkNode | null>(null);
 
@@ -36,15 +42,19 @@ function AppContent() {
       : null;
 
   // 处理编辑操作：书签弹 Modal，文件夹行内重命名
-  const handleEdit = useCallback(() => {
-    if (!singleSelectedItem) return;
-    if (singleSelectedItem.type === "folder") {
-      setRenamingFolderId(singleSelectedItem.id);
-    } else {
-      editingBookmarkRef.current = singleSelectedItem;
-      setEditBookmarkOpen(true);
-    }
-  }, [singleSelectedItem]);
+  const handleEdit = useCallback(
+    (item?: AppBookmarkNode) => {
+      const target = item ?? singleSelectedItem;
+      if (!target) return;
+      if (target.type === "folder") {
+        setRenamingFolderId(target.id);
+      } else {
+        editingBookmarkRef.current = target;
+        setEditBookmarkOpen(true);
+      }
+    },
+    [singleSelectedItem],
+  );
 
   // 处理删除操作
   const handleDelete = useCallback(() => {
@@ -72,9 +82,10 @@ function AppContent() {
   // 键盘快捷键
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      // 忽略在 input/textarea 中的按键
       const tag = (e.target as HTMLElement).tagName;
       if (tag === "INPUT" || tag === "TEXTAREA") return;
+
+      const ctrl = e.ctrlKey || e.metaKey;
 
       if (e.key === "Delete") {
         e.preventDefault();
@@ -82,20 +93,41 @@ function AppContent() {
       } else if (e.key === "F2") {
         e.preventDefault();
         handleEdit();
+      } else if (ctrl && e.key === "x") {
+        e.preventDefault();
+        ctx.cut();
+      } else if (ctrl && e.key === "c") {
+        e.preventDefault();
+        ctx.copy();
+      } else if (ctrl && e.key === "v") {
+        e.preventDefault();
+        ctx.paste();
+      } else if (ctrl && e.key === "a") {
+        e.preventDefault();
+        ctx.selectAll();
       }
     }
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleDelete, handleEdit]);
+  }, [handleDelete, handleEdit, ctx]);
+
+  // 处理新建子文件夹（从右键菜单触发）
+  const handleCreateSubfolder = useCallback((parentId: string) => {
+    setSubfolderParentId(parentId);
+    setCreateFolderOpen(true);
+  }, []);
 
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
       <AddressBar />
       <Toolbar
         onCreateBookmark={() => setCreateBookmarkOpen(true)}
-        onCreateFolder={() => setCreateFolderOpen(true)}
-        onEdit={handleEdit}
+        onCreateFolder={() => {
+          setSubfolderParentId(null);
+          setCreateFolderOpen(true);
+        }}
+        onEdit={() => handleEdit()}
         onDelete={handleDelete}
       />
       <ContentArea
@@ -105,6 +137,13 @@ function AppContent() {
       />
       <StatusBar />
 
+      {/* 右键上下文菜单 */}
+      <ContextMenu
+        onEdit={(item) => handleEdit(item)}
+        onDelete={handleDelete}
+        onCreateSubfolder={handleCreateSubfolder}
+      />
+
       {/* 对话框 */}
       <CreateBookmarkDialog
         open={createBookmarkOpen}
@@ -113,8 +152,19 @@ function AppContent() {
       />
       <CreateFolderDialog
         open={createFolderOpen}
-        onClose={() => setCreateFolderOpen(false)}
-        onConfirm={ctx.createFolder}
+        onClose={() => {
+          setCreateFolderOpen(false);
+          setSubfolderParentId(null);
+        }}
+        onConfirm={async (title) => {
+          // 如果有指定父文件夹，在目标文件夹下创建
+          if (subfolderParentId) {
+            await ctx.createFolderIn(subfolderParentId, title);
+          } else {
+            await ctx.createFolder(title);
+          }
+          setSubfolderParentId(null);
+        }}
       />
       <EditBookmarkDialog
         open={editBookmarkOpen}

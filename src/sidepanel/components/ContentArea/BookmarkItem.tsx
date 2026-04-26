@@ -9,7 +9,7 @@ import styles from "./ContentArea.module.css";
 interface BookmarkItemProps {
   item: AppBookmarkNode;
   selected: boolean;
-  onSelect: (multi: boolean) => void;
+  onSelect: (multi: boolean, range: boolean) => void;
   onDoubleClick: () => void;
 }
 
@@ -30,7 +30,9 @@ export default function BookmarkItem({
         item.url ? (
           <div>
             {item.title && <div>{item.title}</div>}
-            <div style={{ opacity: item.title ? 0.7 : 1, fontSize: 12 }}>{item.url}</div>
+            <div style={{ opacity: item.title ? 0.7 : 1, fontSize: 12 }}>
+              {item.url}
+            </div>
           </div>
         ) : (
           item.title
@@ -40,9 +42,10 @@ export default function BookmarkItem({
     >
       <div
         className={`${styles.item} ${selected ? styles.itemSelected : ""}`}
+        data-item-id={item.id}
         onClick={(e) => {
           e.stopPropagation();
-          onSelect(e.ctrlKey || e.metaKey);
+          onSelect(e.ctrlKey || e.metaKey, e.shiftKey);
         }}
         onDoubleClick={(e) => {
           e.stopPropagation();

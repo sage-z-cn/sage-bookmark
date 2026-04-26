@@ -4,6 +4,9 @@ import {
   EditOutlined,
   FolderAddOutlined,
   BookOutlined,
+  ScissorOutlined,
+  CopyOutlined,
+  SnippetsOutlined,
 } from "@ant-design/icons";
 import { useBookmarkContext } from "@/sidepanel/context/BookmarkContext";
 import styles from "./Toolbar.module.css";
@@ -21,9 +24,15 @@ export default function Toolbar({
   onEdit,
   onDelete,
 }: ToolbarProps) {
-  const { selectedIds } = useBookmarkContext();
+  const { selectedIds, clipboard, cut, copy, paste, canPaste } =
+    useBookmarkContext();
   const hasSelection = selectedIds.size > 0;
   const singleSelected = selectedIds.size === 1;
+
+  // 剪切状态指示：被剪切的项目应显示视觉提示
+  const isCutState =
+    clipboard?.action === "cut" &&
+    clipboard.ids.some((id) => selectedIds.has(id));
 
   return (
     <div className={styles.toolbar}>
@@ -41,6 +50,36 @@ export default function Toolbar({
           size="small"
           icon={<FolderAddOutlined />}
           onClick={onCreateFolder}
+        />
+      </Tooltip>
+
+      <div className={styles.separator} />
+
+      <Tooltip title={hasSelection ? "剪切 (Ctrl+X)" : "选择项目以剪切"}>
+        <Button
+          type="text"
+          size="small"
+          icon={<ScissorOutlined />}
+          disabled={!hasSelection}
+          onClick={cut}
+        />
+      </Tooltip>
+      <Tooltip title={hasSelection ? "复制 (Ctrl+C)" : "选择项目以复制"}>
+        <Button
+          type="text"
+          size="small"
+          icon={<CopyOutlined />}
+          disabled={!hasSelection}
+          onClick={copy}
+        />
+      </Tooltip>
+      <Tooltip title={canPaste ? "粘贴 (Ctrl+V)" : "无内容可粘贴"}>
+        <Button
+          type="text"
+          size="small"
+          icon={<SnippetsOutlined />}
+          disabled={!canPaste}
+          onClick={paste}
         />
       </Tooltip>
 

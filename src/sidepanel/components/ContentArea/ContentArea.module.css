@@ -4,6 +4,7 @@
   overflow-x: hidden;
   padding: 16px;
   background: var(--color-background);
+  position: relative;
 }
 
 .loading {
@@ -101,4 +102,32 @@
   padding: 2px 4px;
   background: var(--color-surface);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+.rubberBand {
+  position: absolute;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.dragOverlay {
+  background: var(--color-surface);
+  border: 1px solid var(--color-primary);
+  border-radius: 8px;
+  padding: 8px 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  opacity: 0.9;
+}
+
+.dragOverlayContent {
+  font-size: 13px;
+  color: var(--color-text-primary);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.draggingItem {
+  opacity: 0.4;
 }

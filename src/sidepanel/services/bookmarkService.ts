@@ -124,6 +124,40 @@ export const bookmarkService = {
     }
   },
 
+  // 移动书签/文件夹到目标位置
+  async move(id: string, parentId: string, index?: number): Promise<AppBookmarkNode> {
+    const node = await chrome.bookmarks.move(id, { parentId, index });
+    return toAppNode(node);
+  },
+
+  // 复制单个书签到目标文件夹（文件夹递归复制）
+  async copyItem(
+    id: string,
+    targetParentId: string,
+    nodeMap: Map<string, AppBookmarkNode>,
+  ): Promise<void> {
+    const node = nodeMap.get(id);
+    if (!node) return;
+    if (node.type === "bookmark") {
+      await chrome.bookmarks.create({
+        parentId: targetParentId,
+        title: node.title,
+        url: node.url,
+      });
+    } else {
+      // 文件夹递归复制
+      const newFolder = await chrome.bookmarks.create({
+        parentId: targetParentId,
+        title: node.title,
+      });
+      if (node.children) {
+        for (const child of node.children) {
+          await this.copyItem(child.id, newFolder.id, nodeMap);
+        }
+      }
+    }
+  },
+
   getPathToRoot,
 
   onExternalChange(callback: () => void): () => void {

@@ -10,6 +10,7 @@ import {
 import type {
   AppBookmarkNode,
   BookmarkIndex,
+  ClipboardState,
   PathSegment,
 } from "@/types/bookmark";
 import { bookmarkService } from "@/sidepanel/services/bookmarkService";
@@ -21,21 +22,37 @@ interface BookmarkContextValue {
   currentItems: AppBookmarkNode[];
   currentPath: PathSegment[];
   selectedIds: Set<string>;
+  lastSelectedId: string | null;
   navigateTo: (folderId: string) => void;
   goBack: () => void;
   goForward: () => void;
   canGoBack: boolean;
   canGoForward: boolean;
   refresh: () => void;
-  toggleSelect: (id: string, multi?: boolean) => void;
+  toggleSelect: (id: string, multi?: boolean, range?: boolean) => void;
+  rangeSelect: (fromId: string, toId: string) => void;
   clearSelection: () => void;
   selectAll: () => void;
+  setSelectedIds: React.Dispatch<React.SetStateAction<Set<string>>>;
   // CRUD 操作
   createBookmark: (title: string, url: string) => Promise<void>;
   createFolder: (title: string) => Promise<void>;
+  createFolderIn: (parentId: string, title: string) => Promise<void>;
   updateBookmark: (id: string, title: string, url: string) => Promise<void>;
   renameItem: (id: string, newTitle: string) => Promise<void>;
   deleteSelected: () => Promise<void>;
+  // 剪贴板
+  clipboard: ClipboardState | null;
+  cut: () => void;
+  copy: () => void;
+  paste: () => Promise<void>;
+  canPaste: boolean;
+  // 移动
+  moveItems: (
+    ids: string[],
+    targetFolderId: string,
+    targetIndex?: number,
+  ) => Promise<void>;
 }
 
 const BookmarkContext = createContext<BookmarkContextValue | null>(null);
@@ -52,6 +69,8 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [currentNodeId, setCurrentNodeId] = useState("1");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
+  const [clipboard, setClipboard] = useState<ClipboardState | null>(null);
 
   const historyRef = useRef<string[]>(["1"]);
   const historyIdxRef = useRef(0);
@@ -100,6 +119,7 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
   const navigateTo = useCallback((folderId: string) => {
     setCurrentNodeId(folderId);
     setSelectedIds(new Set());
+    setLastSelectedId(null);
     const history = historyRef.current;
     const idx = historyIdxRef.current;
     historyRef.current = [...history.slice(0, idx + 1), folderId];
@@ -115,6 +135,7 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
     const prevId = historyRef.current[historyIdxRef.current];
     setCurrentNodeId(prevId);
     setSelectedIds(new Set());
+    setLastSelectedId(null);
   }, []);
 
   const goForward = useCallback(() => {
@@ -123,26 +144,69 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
     const nextId = historyRef.current[historyIdxRef.current];
     setCurrentNodeId(nextId);
     setSelectedIds(new Set());
+    setLastSelectedId(null);
   }, []);
 
   const refresh = useCallback(() => {
     loadTree();
   }, [loadTree]);
 
-  const toggleSelect = useCallback((id: string, multi = false) => {
-    setSelectedIds((prev) => {
-      const next = new Set(multi ? prev : []);
-      if (multi && prev.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  }, []);
+  // Shift+Click 范围选择：选中 fromId 到 toId 之间的所有项
+  const rangeSelect = useCallback(
+    (fromId: string, toId: string) => {
+      if (!currentItems.length) return;
+      const ids = currentItems.map((item) => item.id);
+      const fromIdx = ids.indexOf(fromId);
+      const toIdx = ids.indexOf(toId);
+      if (fromIdx === -1 || toIdx === -1) return;
+      const start = Math.min(fromIdx, toIdx);
+      const end = Math.max(fromIdx, toIdx);
+      const rangeIds = ids.slice(start, end + 1);
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        for (const id of rangeIds) {
+          next.add(id);
+        }
+        return next;
+      });
+    },
+    [currentItems],
+  );
+
+  const toggleSelect = useCallback(
+    (id: string, multi = false, range = false) => {
+      setSelectedIds((prev) => {
+        if (range && lastSelectedId) {
+          // Shift+Click：范围选择，保留已有选中
+          const next = new Set(multi ? prev : []);
+          const ids = currentItems.map((item) => item.id);
+          const fromIdx = ids.indexOf(lastSelectedId);
+          const toIdx = ids.indexOf(id);
+          if (fromIdx !== -1 && toIdx !== -1) {
+            const start = Math.min(fromIdx, toIdx);
+            const end = Math.max(fromIdx, toIdx);
+            for (let i = start; i <= end; i++) {
+              next.add(ids[i]);
+            }
+          }
+          return next;
+        }
+        const next = new Set(multi ? prev : []);
+        if (multi && prev.has(id)) {
+          next.delete(id);
+        } else {
+          next.add(id);
+        }
+        return next;
+      });
+      setLastSelectedId(id);
+    },
+    [lastSelectedId, currentItems],
+  );
 
   const clearSelection = useCallback(() => {
     setSelectedIds(new Set());
+    setLastSelectedId(null);
   }, []);
 
   const selectAll = useCallback(() => {
@@ -165,6 +229,14 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
     [currentNodeId],
   );
 
+  // CRUD：在指定文件夹下新建子文件夹
+  const createFolderIn = useCallback(
+    async (parentId: string, title: string) => {
+      await bookmarkService.createFolder(parentId, title);
+    },
+    [],
+  );
+
   // CRUD：编辑书签（标题 + URL）
   const updateBookmark = useCallback(
     async (id: string, title: string, url: string) => {
@@ -183,7 +255,88 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
     if (!index || selectedIds.size === 0) return;
     await bookmarkService.deleteItems([...selectedIds], index.nodeMap);
     setSelectedIds(new Set());
+    setLastSelectedId(null);
   }, [index, selectedIds]);
+
+  // 剪贴板：剪切
+  const cut = useCallback(() => {
+    if (selectedIds.size === 0) return;
+    setClipboard({
+      action: "cut",
+      ids: [...selectedIds],
+      sourceParentId: currentNodeId,
+    });
+  }, [selectedIds, currentNodeId]);
+
+  // 剪贴板：复制
+  const copy = useCallback(() => {
+    if (selectedIds.size === 0) return;
+    setClipboard({
+      action: "copy",
+      ids: [...selectedIds],
+      sourceParentId: currentNodeId,
+    });
+  }, [selectedIds, currentNodeId]);
+
+  // 剪贴板：粘贴
+  const paste = useCallback(async () => {
+    if (!clipboard || !index) return;
+    const { action, ids, sourceParentId } = clipboard;
+    if (action === "cut") {
+      // 防止移动到自身子目录
+      for (const id of ids) {
+        const node = index.nodeMap.get(id);
+        if (!node) continue;
+        if (
+          node.type === "folder" &&
+          isDescendant(id, currentNodeId, index.nodeMap)
+        ) {
+          continue;
+        }
+        await bookmarkService.move(id, currentNodeId);
+      }
+      setClipboard(null);
+    } else {
+      // 复制：在当前文件夹下创建副本
+      for (const id of ids) {
+        await bookmarkService.copyItem(id, currentNodeId, index.nodeMap);
+      }
+    }
+    setSelectedIds(new Set());
+    setLastSelectedId(null);
+  }, [clipboard, index, currentNodeId]);
+
+  // 是否可粘贴：剪贴板非空，且目标不是剪切源的同目录（剪切模式下）
+  const canPaste =
+    clipboard !== null &&
+    !(clipboard.action === "cut" && clipboard.sourceParentId === currentNodeId);
+
+  // 移动项目到目标文件夹
+  const moveItems = useCallback(
+    async (ids: string[], targetFolderId: string, targetIndex?: number) => {
+      if (!index) return;
+      for (let i = 0; i < ids.length; i++) {
+        const id = ids[i];
+        const node = index.nodeMap.get(id);
+        if (!node) continue;
+        // 防止文件夹移动到自身子目录
+        if (
+          node.type === "folder" &&
+          isDescendant(id, targetFolderId, index.nodeMap)
+        ) {
+          continue;
+        }
+        await bookmarkService.move(
+          id,
+          targetFolderId,
+          targetIndex != null ? targetIndex + i : undefined,
+        );
+      }
+      setSelectedIds(new Set());
+      setLastSelectedId(null);
+    },
+    [index],
+  );
 
   const value = useMemo<BookmarkContextValue>(
     () => ({
@@ -193,6 +346,7 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
       currentItems,
       currentPath,
       selectedIds,
+      lastSelectedId,
       navigateTo,
       goBack,
       goForward,
@@ -200,13 +354,22 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
       canGoForward,
       refresh,
       toggleSelect,
+      rangeSelect,
       clearSelection,
       selectAll,
+      setSelectedIds,
       createBookmark,
       createFolder,
+      createFolderIn,
       updateBookmark,
       renameItem,
       deleteSelected,
+      clipboard,
+      cut,
+      copy,
+      paste,
+      canPaste,
+      moveItems,
     }),
     [
       index,
@@ -215,6 +378,7 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
       currentItems,
       currentPath,
       selectedIds,
+      lastSelectedId,
       navigateTo,
       goBack,
       goForward,
@@ -222,13 +386,22 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
       canGoForward,
       refresh,
       toggleSelect,
+      rangeSelect,
       clearSelection,
       selectAll,
+      setSelectedIds,
       createBookmark,
       createFolder,
+      createFolderIn,
       updateBookmark,
       renameItem,
       deleteSelected,
+      clipboard,
+      cut,
+      copy,
+      paste,
+      canPaste,
+      moveItems,
     ],
   );
 
@@ -237,4 +410,19 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
       {children}
     </BookmarkContext.Provider>
   );
+}
+
+// 检查 targetId 是否是 folderId 的后代（防止循环移动）
+function isDescendant(
+  folderId: string,
+  targetId: string,
+  nodeMap: Map<string, AppBookmarkNode>,
+): boolean {
+  if (folderId === targetId) return true;
+  let current = nodeMap.get(targetId);
+  while (current?.parentId) {
+    if (current.parentId === folderId) return true;
+    current = nodeMap.get(current.parentId);
+  }
+  return false;
 }
