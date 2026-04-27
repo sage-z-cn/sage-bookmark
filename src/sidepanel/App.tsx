@@ -119,10 +119,10 @@ function AppContent() {
       const isInput = tag === "INPUT" || tag === "TEXTAREA";
       const ctrl = e.ctrlKey || e.metaKey;
 
-      // Ctrl+F：打开搜索
+      // Ctrl+F：切换搜索栏
       if (ctrl && e.key === "f") {
         e.preventDefault();
-        setSearchBarVisible(true);
+        handleToggleSearch();
         return;
       }
 
@@ -162,7 +162,14 @@ function AppContent() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleDelete, handleEdit, ctx, searchBarVisible, closeSearch]);
+  }, [
+    handleDelete,
+    handleEdit,
+    ctx,
+    searchBarVisible,
+    closeSearch,
+    handleToggleSearch,
+  ]);
 
   // 已暂存项目的 ID 集合
   const dockedIds = new Set(dockCtx.items.map((item) => item.id));
