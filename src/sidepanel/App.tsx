@@ -163,12 +163,6 @@ function AppContent() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleDelete, handleEdit, ctx, searchBarVisible, closeSearch]);
 
-  // 处理新建子文件夹（从右键菜单触发）
-  const handleCreateSubfolder = useCallback((parentId: string) => {
-    setSubfolderParentId(parentId);
-    setCreateFolderOpen(true);
-  }, []);
-
   // 已暂存项目的 ID 集合
   const dockedIds = new Set(dockCtx.items.map((item) => item.id));
 
@@ -222,7 +216,6 @@ function AppContent() {
       <ContextMenu
         onEdit={(item) => handleEdit(item)}
         onDelete={handleDelete}
-        onCreateSubfolder={handleCreateSubfolder}
       />
 
       {/* 对话框 */}

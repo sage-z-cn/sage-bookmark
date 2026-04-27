@@ -13,14 +13,9 @@ interface ContextMenuState {
 interface ContextMenuProps {
   onEdit: (item: AppBookmarkNode) => void;
   onDelete: () => void;
-  onCreateSubfolder?: (parentId: string) => void;
 }
 
-export default function ContextMenu({
-  onEdit,
-  onDelete,
-  onCreateSubfolder,
-}: ContextMenuProps) {
+export default function ContextMenu({ onEdit, onDelete }: ContextMenuProps) {
   const ctx = useBookmarkContext();
   const { selectedIds, index, toggleSelect, cut, copy, paste, canPaste } = ctx;
   const [state, setState] = useState<ContextMenuState>({
@@ -203,22 +198,6 @@ export default function ContextMenu({
         删除
         <span className={styles.shortcut}>Del</span>
       </button>
-
-      {/* 文件夹：新建子文件夹 */}
-      {isFolder && onCreateSubfolder && (
-        <>
-          <div className={styles.divider} />
-          <button
-            className={styles.menuItem}
-            onClick={() => {
-              onCreateSubfolder(item!.id);
-              close();
-            }}
-          >
-            新建子文件夹
-          </button>
-        </>
-      )}
     </div>
   );
 }

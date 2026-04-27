@@ -1,4 +1,4 @@
-import { Button, Tooltip } from "antd";
+import { Button } from "antd";
 import {
   DeleteOutlined,
   EditOutlined,
@@ -39,104 +39,82 @@ export default function Toolbar({
 
   return (
     <div className={styles.toolbar}>
-      <Tooltip title="新建书签">
-        <Button
-          type="text"
-          size="small"
-          icon={<BookOutlined />}
-          onClick={onCreateBookmark}
-        />
-      </Tooltip>
-      <Tooltip title="新建文件夹">
-        <Button
-          type="text"
-          size="small"
-          icon={<FolderAddOutlined />}
-          onClick={onCreateFolder}
-        />
-      </Tooltip>
+      <Button
+        type="text"
+        size="small"
+        icon={<BookOutlined />}
+        onClick={onCreateBookmark}
+      />
+      <Button
+        type="text"
+        size="small"
+        icon={<FolderAddOutlined />}
+        onClick={onCreateFolder}
+      />
 
       <div className={styles.separator} />
 
-      <Tooltip title={hasSelection ? "剪切 (Ctrl+X)" : "选择项目以剪切"}>
-        <Button
-          type="text"
-          size="small"
-          icon={<ScissorOutlined />}
-          disabled={!hasSelection}
-          onClick={cut}
-        />
-      </Tooltip>
-      <Tooltip title={hasSelection ? "复制 (Ctrl+C)" : "选择项目以复制"}>
-        <Button
-          type="text"
-          size="small"
-          icon={<CopyOutlined />}
-          disabled={!hasSelection}
-          onClick={copy}
-        />
-      </Tooltip>
-      <Tooltip title={canPaste ? "粘贴 (Ctrl+V)" : "无内容可粘贴"}>
-        <Button
-          type="text"
-          size="small"
-          icon={<SnippetsOutlined />}
-          disabled={!canPaste}
-          onClick={paste}
-        />
-      </Tooltip>
+      <Button
+        type="text"
+        size="small"
+        icon={<ScissorOutlined />}
+        disabled={!hasSelection}
+        onClick={cut}
+      />
+      <Button
+        type="text"
+        size="small"
+        icon={<CopyOutlined />}
+        disabled={!hasSelection}
+        onClick={copy}
+      />
+      <Button
+        type="text"
+        size="small"
+        icon={<SnippetsOutlined />}
+        disabled={!canPaste}
+        onClick={paste}
+      />
 
       <div className={styles.separator} />
 
-      <Tooltip title={singleSelected ? "编辑 (F2)" : "选择一个项目以编辑"}>
-        <Button
-          type="text"
-          size="small"
-          icon={<EditOutlined />}
-          disabled={!singleSelected}
-          onClick={onEdit}
-        />
-      </Tooltip>
+      <Button
+        type="text"
+        size="small"
+        icon={<EditOutlined />}
+        disabled={!singleSelected}
+        onClick={onEdit}
+      />
 
-      <Tooltip
-        title={
-          hasSelection ? `删除 (${selectedIds.size} 项)` : "选择项目以删除"
-        }
-      >
-        <Button
-          type="text"
-          size="small"
-          danger
-          icon={<DeleteOutlined />}
-          disabled={!hasSelection}
-          onClick={onDelete}
-        />
-      </Tooltip>
+      <Button
+        type="text"
+        size="small"
+        danger
+        icon={<DeleteOutlined />}
+        disabled={!hasSelection}
+        onClick={onDelete}
+      />
 
       <div className={styles.spacer} />
 
       {/* 搜索按钮 */}
-      <Tooltip title={searchActive ? "关闭搜索 (Esc)" : "搜索 (Ctrl+F)"}>
-        <Button
-          type="text"
-          size="small"
-          icon={<SearchOutlined />}
-          className={searchActive ? styles.searchActive : ""}
-          onClick={onToggleSearch}
-        />
-      </Tooltip>
+      <Button
+        type="text"
+        size="small"
+        icon={<SearchOutlined />}
+        className={searchActive ? styles.searchActive : ""}
+        onClick={onToggleSearch}
+      />
 
       <div className={styles.separator} />
 
       {/* 视图切换按钮：点击在网格/列表视图间切换 */}
-      <Tooltip title={viewMode === "grid" ? "切换到列表视图" : "切换到图标视图"}>
-        <Button
-          type="text"
-          size="small"
-          icon={viewMode === "grid" ? <UnorderedListOutlined /> : <AppstoreOutlined />}
-          onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
-        />
-      </Tooltip>
+      <Button
+        type="text"
+        size="small"
+        icon={viewMode === "grid" ? <UnorderedListOutlined /> : <AppstoreOutlined />}
+        onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
+      />
     </div>
   );
 }
