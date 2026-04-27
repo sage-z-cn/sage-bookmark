@@ -310,9 +310,19 @@ function AppWithDnd() {
     [bookmarkCtx],
   );
 
+  // 处理 Ctrl+拖拽放入文件夹
+  const handleDropToFolder = useCallback(
+    (ids: string[], folderId: string) => {
+      bookmarkCtx.optimisticMoveIntoFolder(ids, folderId);
+      bookmarkCtx.moveItems(ids, folderId);
+    },
+    [bookmarkCtx],
+  );
+
   return (
     <GlobalDndProvider
       onDropToDock={handleDropToDock}
+      onDropToFolder={handleDropToFolder}
       onReorder={handleReorder}
       viewMode={viewMode}
     >

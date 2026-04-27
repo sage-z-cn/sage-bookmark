@@ -2,8 +2,10 @@ import {
   createContext,
   useCallback,
   useContext,
-  useState,
+  useEffect,
   useMemo,
+  useRef,
+  useState,
   type ReactNode,
 } from "react";
 import {
@@ -75,6 +77,8 @@ interface DragState {
   activeId: UniqueIdentifier | null;
   activeIds: string[];
   activeItem: DragItemData | null;
+  ctrlHeld: boolean;
+  overFolderId: string | null;
 }
 
 interface GlobalDndContextValue extends DragState {
@@ -88,6 +92,8 @@ const GlobalDndContext = createContext<GlobalDndContextValue>({
   activeIds: [],
   activeItem: null,
   isOverDock: false,
+  ctrlHeld: false,
+  overFolderId: null,
 });
 
 export function useGlobalDnd() {
@@ -99,6 +105,7 @@ interface GlobalDndProviderProps {
   onDragStart?: (ids: string[]) => void;
   onDragEnd?: () => void;
   onDropToDock?: (ids: string[]) => void;
+  onDropToFolder?: (ids: string[], folderId: string) => void;
   onReorder?: (activeId: string, overId: string) => void;
   renderOverlay?: (item: DragItemData, count: number) => ReactNode;
   viewMode?: "grid" | "list";
@@ -111,6 +118,7 @@ export function GlobalDndProvider({
   onDragStart,
   onDragEnd,
   onDropToDock,
+  onDropToFolder,
   onReorder,
   renderOverlay,
   viewMode = "grid",
@@ -121,8 +129,12 @@ export function GlobalDndProvider({
     activeId: null,
     activeIds: [],
     activeItem: null,
+    ctrlHeld: false,
+    overFolderId: null,
   });
   const [isOverDock, setIsOverDock] = useState(false);
+
+  const ctrlRef = useRef(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -131,6 +143,33 @@ export function GlobalDndProvider({
       },
     }),
   );
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Control" || e.key === "Meta") {
+        ctrlRef.current = true;
+        setState((prev) =>
+          prev.isDragging ? { ...prev, ctrlHeld: true } : prev,
+        );
+      }
+    }
+    function onKeyUp(e: KeyboardEvent) {
+      if (e.key === "Control" || e.key === "Meta") {
+        ctrlRef.current = false;
+        setState((prev) =>
+          prev.isDragging
+            ? { ...prev, ctrlHeld: false, overFolderId: null }
+            : prev,
+        );
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+    };
+  }, []);
 
   const handleDragStart = useCallback(
     (event: DragStartEvent) => {
@@ -151,6 +190,8 @@ export function GlobalDndProvider({
         activeId: active.id,
         activeIds: ids,
         activeItem,
+        ctrlHeld: ctrlRef.current,
+        overFolderId: null,
       });
 
       onDragStart?.(ids);
@@ -161,6 +202,32 @@ export function GlobalDndProvider({
   const handleDragOver = useCallback((event: DragOverEvent) => {
     const { over } = event;
     setIsOverDock(over?.id === DOCK_DROPPABLE_ID);
+
+    setState((prev) => {
+      if (!prev.isDragging) return prev;
+      if (prev.ctrlHeld && over) {
+        const overData = over.data.current;
+        if (overData?.type === "folder" && over.id !== prev.activeId) {
+          return { ...prev, overFolderId: over.id as string };
+        }
+      }
+      if (prev.overFolderId) {
+        return { ...prev, overFolderId: null };
+      }
+      return prev;
+    });
+  }, []);
+
+  const resetState = useCallback(() => {
+    setState({
+      isDragging: false,
+      source: null,
+      activeId: null,
+      activeIds: [],
+      activeItem: null,
+      ctrlHeld: false,
+      overFolderId: null,
+    });
   }, []);
 
   const handleDragEnd = useCallback(
@@ -168,47 +235,31 @@ export function GlobalDndProvider({
       const { active, over } = event;
 
       if (!over) {
-        // 没有放置目标，取消拖拽
-        setState({
-          isDragging: false,
-          source: null,
-          activeId: null,
-          activeIds: [],
-          activeItem: null,
-        });
+        resetState();
         setIsOverDock(false);
         onDragEnd?.();
         return;
       }
 
-      // 处理放置到 Dock
-      if (over.id === DOCK_DROPPABLE_ID && state.source === "content") {
-        onDropToDock?.(state.activeIds);
-      } else if (over.id !== active.id && state.source === "content") {
-        onReorder?.(active.id as string, over.id as string);
+      if (state.source === "content") {
+        if (over.id === DOCK_DROPPABLE_ID) {
+          onDropToDock?.(state.activeIds);
+        } else if (state.ctrlHeld && state.overFolderId) {
+          onDropToFolder?.(state.activeIds, state.overFolderId);
+        } else if (over.id !== active.id) {
+          onReorder?.(active.id as string, over.id as string);
+        }
       }
 
-      setState({
-        isDragging: false,
-        source: null,
-        activeId: null,
-        activeIds: [],
-        activeItem: null,
-      });
+      resetState();
       setIsOverDock(false);
       onDragEnd?.();
     },
-    [onDragEnd, onDropToDock, onReorder, state],
+    [onDragEnd, onDropToDock, onDropToFolder, onReorder, resetState, state],
   );
 
   const handleDragCancel = useCallback(() => {
-    setState({
-      isDragging: false,
-      source: null,
-      activeId: null,
-      activeIds: [],
-      activeItem: null,
-    });
+    resetState();
     setIsOverDock(false);
     onDragEnd?.();
   }, [onDragEnd]);

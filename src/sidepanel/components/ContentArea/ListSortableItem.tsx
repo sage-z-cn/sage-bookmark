@@ -32,9 +32,17 @@ export default function ListSortableItem({
   onRenameCancel,
   highlightQuery,
 }: ListSortableItemProps) {
-  const { isDragging: globalDragging, activeIds } = useGlobalDnd();
+  const {
+    isDragging: globalDragging,
+    activeIds,
+    ctrlHeld,
+    overFolderId,
+  } = useGlobalDnd();
 
   const dragIds = selected ? [...selectedIds] : [item.id as string];
+
+  const isFolderTarget =
+    ctrlHeld && overFolderId === item.id && item.type === "folder";
 
   const {
     attributes,
@@ -58,11 +66,17 @@ export default function ListSortableItem({
   const isInDragGroup =
     globalDragging && !isDragging && activeIds.includes(item.id as string);
 
+  const shouldSuppressTransform = ctrlHeld && globalDragging && !isDragging;
+
   const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
+    transform: shouldSuppressTransform
+      ? "none"
+      : CSS.Transform.toString(transform),
     transition,
     opacity: isDragging || isInDragGroup ? 0 : docked ? 0.45 : 1,
   };
+
+  const folderHighlightClass = isFolderTarget ? styles.folderDropTarget : "";
 
   return (
     <div
@@ -70,7 +84,7 @@ export default function ListSortableItem({
       style={style}
       {...attributes}
       {...listeners}
-      className={`${isDragging ? styles.draggingItem : ""} ${isInDragGroup ? styles.dragGroupItem : ""} ${docked && !isDragging && !isInDragGroup ? styles.itemDocked : ""}`}
+      className={`${isDragging ? styles.draggingItem : ""} ${isInDragGroup ? styles.dragGroupItem : ""} ${docked && !isDragging && !isInDragGroup ? styles.itemDocked : ""} ${folderHighlightClass}`}
     >
       <ListItem
         item={item}

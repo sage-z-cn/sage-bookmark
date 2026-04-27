@@ -142,6 +142,26 @@
   box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.15);
 }
 
+.folderDropTarget {
+  position: relative;
+}
+
+.folderDropTarget::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--color-primary);
+  border-radius: 8px;
+  background: rgba(99, 102, 241, 0.1);
+  pointer-events: none;
+  animation: folderDropPulse 1s ease-in-out infinite;
+}
+
+@keyframes folderDropPulse {
+  0%, 100% { background: rgba(99, 102, 241, 0.08); }
+  50% { background: rgba(99, 102, 241, 0.18); }
+}
+
 /* 已暂存到 Dock 的项目样式 */
 .itemDocked {
   opacity: 0.45;
