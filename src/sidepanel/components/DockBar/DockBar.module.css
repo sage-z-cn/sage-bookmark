@@ -1,34 +1,31 @@
 .dockBar {
-  position: fixed;
-  bottom: 100px;
-  left: 50%;
-  transform: translateX(-50%) translateY(100%);
-  width: 90%;
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-top: 1px solid var(--color-border);
   padding: 8px 16px;
   min-height: 72px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
-  opacity: 0;
-  transition:
-    transform 300ms ease-out,
-    opacity 300ms ease-out;
   display: flex;
   align-items: center;
   gap: 12px;
-  z-index: 100;
+  flex-shrink: 0;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    max-height 300ms ease-out,
+    opacity 300ms ease-out,
+    padding 300ms ease-out;
 }
 
 .dockBarVisible {
-  transform: translateX(-50%) translateY(0);
+  max-height: 120px;
   opacity: 1;
+  padding: 8px 16px;
 }
 
 .dockBarDropActive {
-  border: 2px solid var(--color-primary);
+  border-top: 2px solid var(--color-primary);
   min-height: 80px;
   background: rgba(255, 255, 255, 0.95);
 }

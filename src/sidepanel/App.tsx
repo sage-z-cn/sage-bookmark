@@ -199,10 +199,6 @@ function AppContent() {
         searchActive={isSearchActive}
         dockedIds={dockedIds}
       />
-      <StatusBar
-        searchActive={isSearchActive}
-        searchResultCount={searchResults.length}
-      />
       <DockBar
         items={dockCtx.items}
         isDragging={globalDnd.isDragging}
@@ -210,6 +206,10 @@ function AppContent() {
         onPlaceAll={dockCtx.placeAll}
         onCancelAll={dockCtx.clearAll}
         canPlace={dockCtx.canPlace}
+      />
+      <StatusBar
+        searchActive={isSearchActive}
+        searchResultCount={searchResults.length}
       />
 
       {/* 右键上下文菜单 */}
