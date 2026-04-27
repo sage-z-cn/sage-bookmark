@@ -94,7 +94,10 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
         // 优先恢复持久化的目录（如果有效且存在）
         if (persistedFolderId && idx.nodeMap.has(persistedFolderId)) {
           setCurrentNodeId(persistedFolderId);
-          historyRef.current = [persistedFolderId];
+          // 构建从根目录到当前目录的完整路径作为历史记录，支持逐级返回
+          const path = bookmarkService.getPathToRoot(persistedFolderId, idx.nodeMap);
+          historyRef.current = path.map((segment) => segment.id);
+          historyIdxRef.current = historyRef.current.length - 1;
         } else {
           const bookmarkBarId = "1";
           if (idx.nodeMap.has(bookmarkBarId)) {
