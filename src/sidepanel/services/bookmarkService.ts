@@ -166,26 +166,52 @@ export const bookmarkService = {
     return toAppNode(subTree[0]);
   },
 
-  // 从 JSON 数据导入书签到指定父文件夹
+  // 从 JSON 数据导入书签到指定父文件夹（跳过根节点，直接导入子项）
   async importBookmarks(
     data: AppBookmarkNode,
     targetParentId: string,
   ): Promise<void> {
-    const created = await chrome.bookmarks.create({
-      parentId: targetParentId,
-      title: data.title,
-    });
-    if (data.children) {
-      for (const child of data.children) {
-        if (child.type === "folder") {
-          await this.importBookmarks(child, created.id);
-        } else {
-          await chrome.bookmarks.create({
-            parentId: created.id,
-            title: child.title,
-            url: child.url,
-          });
+    const children = data.children;
+    if (!children) return;
+    for (const child of children) {
+      if (child.type === "folder") {
+        const created = await chrome.bookmarks.create({
+          parentId: targetParentId,
+          title: child.title,
+        });
+        if (child.children?.length) {
+          await this.importChildren(child.children, created.id);
         }
+      } else {
+        await chrome.bookmarks.create({
+          parentId: targetParentId,
+          title: child.title,
+          url: child.url,
+        });
+      }
+    }
+  },
+
+  // 递归导入子节点
+  async importChildren(
+    children: AppBookmarkNode[],
+    parentId: string,
+  ): Promise<void> {
+    for (const child of children) {
+      if (child.type === "folder") {
+        const created = await chrome.bookmarks.create({
+          parentId,
+          title: child.title,
+        });
+        if (child.children?.length) {
+          await this.importChildren(child.children, created.id);
+        }
+      } else {
+        await chrome.bookmarks.create({
+          parentId,
+          title: child.title,
+          url: child.url,
+        });
       }
     }
   },
