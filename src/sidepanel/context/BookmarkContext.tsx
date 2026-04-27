@@ -59,6 +59,9 @@ interface BookmarkContextValue {
   optimisticReorder: (activeId: string, overId: string) => void;
   // 乐观更新：移入目标文件夹
   optimisticMoveIntoFolder: (ids: string[], targetFolderId: string) => void;
+  // 导出导入
+  exportAsJson: (folderId: string) => Promise<void>;
+  importFromJson: (file: File, targetParentId: string) => Promise<void>;
 }
 
 const BookmarkContext = createContext<BookmarkContextValue | null>(null);
@@ -95,7 +98,10 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
         if (persistedFolderId && idx.nodeMap.has(persistedFolderId)) {
           setCurrentNodeId(persistedFolderId);
           // 构建从根目录到当前目录的完整路径作为历史记录，支持逐级返回
-          const path = bookmarkService.getPathToRoot(persistedFolderId, idx.nodeMap);
+          const path = bookmarkService.getPathToRoot(
+            persistedFolderId,
+            idx.nodeMap,
+          );
           historyRef.current = path.map((segment) => segment.id);
           historyIdxRef.current = historyRef.current.length - 1;
         } else {
@@ -432,6 +438,31 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
     [currentNodeId],
   );
 
+  // 导出指定文件夹为 JSON 文件下载
+  const exportAsJson = useCallback(async (folderId: string) => {
+    const data = await bookmarkService.exportBookmarks(folderId);
+    // 清理不需要导出的字段
+    const cleaned = cleanExportNode(data);
+    const json = JSON.stringify(cleaned, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${data.title || "bookmarks"}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, []);
+
+  // 从 JSON 文件导入书签到指定文件夹
+  const importFromJson = useCallback(
+    async (file: File, targetParentId: string) => {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      await bookmarkService.importBookmarks(data, targetParentId);
+    },
+    [],
+  );
+
   const value = useMemo<BookmarkContextValue>(
     () => ({
       index,
@@ -467,6 +498,8 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
       moveItems,
       optimisticReorder,
       optimisticMoveIntoFolder,
+      exportAsJson,
+      importFromJson,
     }),
     [
       index,
@@ -502,6 +535,8 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
       moveItems,
       optimisticReorder,
       optimisticMoveIntoFolder,
+      exportAsJson,
+      importFromJson,
     ],
   );
 
@@ -525,4 +560,17 @@ function isDescendant(
     current = nodeMap.get(current.parentId);
   }
   return false;
+}
+
+// 清理导出节点，只保留结构化信息（去除运行时字段如 id、faviconUrl 等）
+function cleanExportNode(node: AppBookmarkNode): Record<string, unknown> {
+  const result: Record<string, unknown> = {
+    title: node.title,
+    type: node.type,
+  };
+  if (node.url) result.url = node.url;
+  if (node.type === "folder" && node.children?.length) {
+    result.children = node.children.map(cleanExportNode);
+  }
+  return result;
 }

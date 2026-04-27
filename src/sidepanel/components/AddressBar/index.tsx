@@ -3,11 +3,8 @@ import {
   ArrowLeftOutlined,
   ArrowRightOutlined,
   ReloadOutlined,
-  SunOutlined,
-  MoonOutlined,
 } from "@ant-design/icons";
 import { useBookmarkContext } from "@/sidepanel/context/BookmarkContext";
-import { useTheme } from "@/sidepanel/context/ThemeContext";
 import Breadcrumb from "./Breadcrumb";
 import styles from "./AddressBar.module.css";
 
@@ -21,7 +18,6 @@ export default function AddressBar() {
     currentPath,
     navigateTo,
   } = useBookmarkContext();
-  const { theme, toggleTheme } = useTheme();
 
   return (
     <div className={styles.addressBar}>
@@ -48,12 +44,6 @@ export default function AddressBar() {
         />
       </div>
       <Breadcrumb path={currentPath} onNavigate={navigateTo} />
-      <Button
-        type="text"
-        size="small"
-        icon={theme === "dark" ? <SunOutlined /> : <MoonOutlined />}
-        onClick={toggleTheme}
-      />
     </div>
   );
 }

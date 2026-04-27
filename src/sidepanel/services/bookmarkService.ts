@@ -160,6 +160,36 @@ export const bookmarkService = {
 
   getPathToRoot,
 
+  // 导出书签树为 JSON（递归构建，包含完整子节点结构）
+  async exportBookmarks(folderId: string): Promise<AppBookmarkNode> {
+    const subTree = await chrome.bookmarks.getSubTree(folderId);
+    return toAppNode(subTree[0]);
+  },
+
+  // 从 JSON 数据导入书签到指定父文件夹
+  async importBookmarks(
+    data: AppBookmarkNode,
+    targetParentId: string,
+  ): Promise<void> {
+    const created = await chrome.bookmarks.create({
+      parentId: targetParentId,
+      title: data.title,
+    });
+    if (data.children) {
+      for (const child of data.children) {
+        if (child.type === "folder") {
+          await this.importBookmarks(child, created.id);
+        } else {
+          await chrome.bookmarks.create({
+            parentId: created.id,
+            title: child.title,
+            url: child.url,
+          });
+        }
+      }
+    }
+  },
+
   onExternalChange(callback: () => void): () => void {
     const events = [
       chrome.bookmarks.onCreated,
