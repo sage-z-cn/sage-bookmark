@@ -51,6 +51,7 @@ export default function ListItem({
   highlightQuery,
 }: ListItemProps) {
   const isFolder = item.type === "folder";
+  const childCount = isFolder ? (item.children?.length ?? 0) : 0;
   const displayUrl = !isFolder && item.url ? item.url : "—";
   const displayName =
     item.title || (isFolder ? "未命名文件夹" : item.url || "");
@@ -92,11 +93,25 @@ export default function ListItem({
     }
   }
 
+  // 构建 tooltip 内容
+  const tooltipTitle = isFolder ? (
+    <div>
+      <div>{displayName}</div>
+      <div style={{ opacity: 0.7, fontSize: 12 }}>
+        包含 {childCount} 个项目
+      </div>
+    </div>
+  ) : item.url ? (
+    <div>
+      <div>{displayName}</div>
+      <div style={{ opacity: 0.7, fontSize: 12 }}>{item.url}</div>
+    </div>
+  ) : (
+    displayName
+  );
+
   return (
-    <Tooltip
-      title={item.url ? `${displayName}\n${item.url}` : displayName}
-      mouseEnterDelay={0.8}
-    >
+    <Tooltip title={tooltipTitle} mouseEnterDelay={0.8}>
       <div
         className={`${styles.listRow} ${selected ? styles.listRowSelected : ""} ${cut ? styles.listRowCut : ""}`}
         data-item-id={item.id}

@@ -88,8 +88,18 @@ export default function FolderItem({
     );
   }
 
+  const childCount = item.children?.length ?? 0;
+  const tooltipContent = (
+    <div>
+      <div>{item.title}</div>
+      <div style={{ opacity: 0.7, fontSize: 12 }}>
+        包含 {childCount} 个项目
+      </div>
+    </div>
+  );
+
   return (
-    <Tooltip title={item.title} mouseEnterDelay={0.8}>
+    <Tooltip title={tooltipContent} mouseEnterDelay={0.8}>
       <div
         className={`${styles.item} ${selected ? styles.itemSelected : ""} ${cut ? styles.itemCut : ""}`}
         data-item-id={item.id}
