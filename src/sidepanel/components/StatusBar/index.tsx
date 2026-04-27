@@ -1,4 +1,7 @@
+import { Button } from "antd";
+import { AppstoreOutlined, UnorderedListOutlined } from "@ant-design/icons";
 import { useBookmarkContext } from "@/sidepanel/context/BookmarkContext";
+import { useViewSettings } from "@/sidepanel/context/ViewSettingsContext";
 import styles from "./StatusBar.module.css";
 
 interface StatusBarProps {
@@ -11,6 +14,7 @@ export default function StatusBar({
   searchResultCount,
 }: StatusBarProps) {
   const { currentItems, selectedIds } = useBookmarkContext();
+  const { viewMode, setViewMode } = useViewSettings();
 
   const folderCount = currentItems.filter((i) => i.type === "folder").length;
   const bookmarkCount = currentItems.filter(
@@ -27,10 +31,20 @@ export default function StatusBar({
             {folderCount} 个文件夹 + {bookmarkCount} 个书签
           </>
         )}
+        {selectedIds.size > 0 && (
+          <>
+            <span className={styles.separator}>|</span>
+            <span className={styles.selectedStat}>已选 {selectedIds.size} 项</span>
+          </>
+        )}
       </span>
-      {selectedIds.size > 0 && (
-        <span className={styles.selectedStat}>已选 {selectedIds.size} 项</span>
-      )}
+      {/* 视图切换按钮 */}
+      <Button
+        type="text"
+        size="small"
+        icon={viewMode === "grid" ? <UnorderedListOutlined /> : <AppstoreOutlined />}
+        onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
+      />
     </div>
   );
 }

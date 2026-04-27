@@ -7,12 +7,9 @@ import {
   ScissorOutlined,
   CopyOutlined,
   SnippetsOutlined,
-  AppstoreOutlined,
-  UnorderedListOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
 import { useBookmarkContext } from "@/sidepanel/context/BookmarkContext";
-import { useViewSettings } from "@/sidepanel/context/ViewSettingsContext";
 import styles from "./Toolbar.module.css";
 
 interface ToolbarProps {
@@ -33,7 +30,6 @@ export default function Toolbar({
   onToggleSearch,
 }: ToolbarProps) {
   const { selectedIds, cut, copy, paste, canPaste } = useBookmarkContext();
-  const { viewMode, setViewMode } = useViewSettings();
   const hasSelection = selectedIds.size > 0;
   const singleSelected = selectedIds.size === 1;
 
@@ -104,16 +100,6 @@ export default function Toolbar({
         icon={<SearchOutlined />}
         className={searchActive ? styles.searchActive : ""}
         onClick={onToggleSearch}
-      />
-
-      <div className={styles.separator} />
-
-      {/* 视图切换按钮：点击在网格/列表视图间切换 */}
-      <Button
-        type="text"
-        size="small"
-        icon={viewMode === "grid" ? <UnorderedListOutlined /> : <AppstoreOutlined />}
-        onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
       />
     </div>
   );
