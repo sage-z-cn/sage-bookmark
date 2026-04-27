@@ -12,7 +12,7 @@
 }
 
 :root {
-  /* Genesis 色彩变量 */
+  /* Genesis 色彩变量 - 亮色主题 */
   --color-primary: #6366f1;
   --color-primary-hover: #4f46e5;
   --color-neutral: #9c9c9c;
@@ -29,6 +29,21 @@
   --font-display: "General Sans", -apple-system, BlinkMacSystemFont, sans-serif;
   --font-body: "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
   --font-code: "JetBrains Mono", monospace;
+}
+
+/* 暗色主题变量 */
+:root.dark {
+  --color-primary: #818cf8;
+  --color-primary-hover: #a5b4fc;
+  --color-neutral: #71717a;
+  --color-background: #14141f;
+  --color-surface: #1e1e2e;
+  --color-text-primary: #e4e4e7;
+  --color-text-secondary: #a1a1aa;
+  --color-border: #3f3f5a;
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-error: #f87171;
 }
 
 html,
@@ -69,9 +84,17 @@ h6 {
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
 }
 
+:root.dark :focus-visible {
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.25);
+}
+
 /* 选择颜色 */
 ::selection {
   background-color: rgba(99, 102, 241, 0.15);
+}
+
+:root.dark ::selection {
+  background-color: rgba(129, 140, 248, 0.3);
 }
 
 /* 滚动条 */

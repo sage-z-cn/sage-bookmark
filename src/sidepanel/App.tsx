@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ConfigProvider } from "antd";
-import { genesisTheme } from "./styles/token";
+import { genesisTheme, genesisDarkTheme } from "./styles/token";
 import {
   BookmarkProvider,
   useBookmarkContext,
@@ -11,6 +11,7 @@ import {
 } from "./context/ViewSettingsContext";
 import { DockProvider, useDockContext } from "./context/DockContext";
 import { GlobalDndProvider, useGlobalDnd } from "./context/GlobalDndContext";
+import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import AddressBar from "./components/AddressBar";
 import Toolbar from "./components/Toolbar";
 import SearchBar from "./components/SearchBar";
@@ -265,11 +266,12 @@ function AppContent() {
   );
 }
 
-export default function App() {
-  // 需要在 GlobalDndProvider 外部获取 dockCtx
-  // 所以我们创建一个内部组件来处理拖拽逻辑
+function AppWithTheme() {
+  const { theme } = useTheme();
+  const currentTheme = theme === "dark" ? genesisDarkTheme : genesisTheme;
+
   return (
-    <ConfigProvider theme={genesisTheme}>
+    <ConfigProvider theme={currentTheme}>
       <ViewSettingsProvider>
         <BookmarkProvider>
           <DockProvider>
@@ -278,6 +280,14 @@ export default function App() {
         </BookmarkProvider>
       </ViewSettingsProvider>
     </ConfigProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppWithTheme />
+    </ThemeProvider>
   );
 }
 
