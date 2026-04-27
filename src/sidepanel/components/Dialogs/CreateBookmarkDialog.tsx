@@ -15,6 +15,24 @@ export default function CreateBookmarkDialog({
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
 
+  async function handleAfterOpenChange(visible: boolean) {
+    if (!visible) return
+    try {
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      })
+      if (tab?.url && tab.url !== 'chrome://newtab') {
+        form.setFieldsValue({
+          title: tab.title || '',
+          url: tab.url,
+        })
+      }
+    } catch {
+      // 获取标签页信息失败，不填充
+    }
+  }
+
   async function handleOk() {
     try {
       const values = await form.validateFields()
@@ -45,6 +63,7 @@ export default function CreateBookmarkDialog({
       okText="创建"
       cancelText="取消"
       destroyOnClose
+      afterOpenChange={handleAfterOpenChange}
     >
       <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
         <Form.Item
