@@ -8,14 +8,24 @@ interface ContextMenuState {
   x: number;
   y: number;
   targetItem: AppBookmarkNode | null;
+  isBackground: boolean;
 }
 
 interface ContextMenuProps {
   onEdit: (item: AppBookmarkNode) => void;
   onDelete: () => void;
+  onCreateBookmark?: () => void;
+  onCreateFolder?: () => void;
+  onRefresh?: () => void;
 }
 
-export default function ContextMenu({ onEdit, onDelete }: ContextMenuProps) {
+export default function ContextMenu({
+  onEdit,
+  onDelete,
+  onCreateBookmark,
+  onCreateFolder,
+  onRefresh,
+}: ContextMenuProps) {
   const ctx = useBookmarkContext();
   const { selectedIds, index, toggleSelect, cut, copy, paste, canPaste } = ctx;
   const [state, setState] = useState<ContextMenuState>({
@@ -23,10 +33,11 @@ export default function ContextMenu({ onEdit, onDelete }: ContextMenuProps) {
     x: 0,
     y: 0,
     targetItem: null,
+    isBackground: false,
   });
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // 右键事件监听
+  // 右键事件监听（项目上右键）
   useEffect(() => {
     function handleContextMenu(e: MouseEvent) {
       const target = (e.target as HTMLElement).closest("[data-item-id]");
@@ -37,21 +48,43 @@ export default function ContextMenu({ onEdit, onDelete }: ContextMenuProps) {
       const item = index?.nodeMap.get(itemId);
       if (!item) return;
 
-      // 如果右键的项目未被选中，则选中它
       if (!selectedIds.has(itemId)) {
         toggleSelect(itemId, false, false);
       }
 
-      // 计算菜单位置，确保不超出视口
       const x = Math.min(e.clientX, window.innerWidth - 200);
       const y = Math.min(e.clientY, window.innerHeight - 300);
 
-      setState({ visible: true, x, y, targetItem: item });
+      setState({ visible: true, x, y, targetItem: item, isBackground: false });
     }
 
     document.addEventListener("contextmenu", handleContextMenu);
     return () => document.removeEventListener("contextmenu", handleContextMenu);
   }, [index, selectedIds, toggleSelect]);
+
+  // 空白处右键事件监听
+  useEffect(() => {
+    function handleBackgroundContextMenu(e: MouseEvent) {
+      const target = (e.target as HTMLElement).closest("[data-item-id]");
+      if (target) return;
+
+      const contentArea = (e.target as HTMLElement).closest(
+        "[data-content-area]",
+      );
+      if (!contentArea) return;
+
+      e.preventDefault();
+
+      const x = Math.min(e.clientX, window.innerWidth - 200);
+      const y = Math.min(e.clientY, window.innerHeight - 300);
+
+      setState({ visible: true, x, y, targetItem: null, isBackground: true });
+    }
+
+    document.addEventListener("contextmenu", handleBackgroundContextMenu);
+    return () =>
+      document.removeEventListener("contextmenu", handleBackgroundContextMenu);
+  }, []);
 
   // 点击其他地方关闭菜单
   useEffect(() => {
@@ -88,6 +121,72 @@ export default function ContextMenu({ onEdit, onDelete }: ContextMenuProps) {
   const isBookmark = item?.type === "bookmark";
   const hasSelection = selectedIds.size > 0;
 
+  // 空白处右键菜单
+  if (state.isBackground) {
+    return (
+      <div
+        ref={menuRef}
+        className={styles.menu}
+        style={{ left: state.x, top: state.y }}
+      >
+        {canPaste && (
+          <>
+            <button
+              className={styles.menuItem}
+              onClick={() => {
+                paste();
+                close();
+              }}
+            >
+              粘贴
+              <span className={styles.shortcut}>Ctrl+V</span>
+            </button>
+            <div className={styles.divider} />
+          </>
+        )}
+
+        {onCreateBookmark && (
+          <button
+            className={styles.menuItem}
+            onClick={() => {
+              onCreateBookmark();
+              close();
+            }}
+          >
+            新建书签
+          </button>
+        )}
+        {onCreateFolder && (
+          <button
+            className={styles.menuItem}
+            onClick={() => {
+              onCreateFolder();
+              close();
+            }}
+          >
+            新建文件夹
+          </button>
+        )}
+
+        {onRefresh && (
+          <>
+            <div className={styles.divider} />
+            <button
+              className={styles.menuItem}
+              onClick={() => {
+                onRefresh();
+                close();
+              }}
+            >
+              刷新
+            </button>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  // 项目右键菜单
   return (
     <div
       ref={menuRef}

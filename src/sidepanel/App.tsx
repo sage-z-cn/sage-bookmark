@@ -216,6 +216,12 @@ function AppContent() {
       <ContextMenu
         onEdit={(item) => handleEdit(item)}
         onDelete={handleDelete}
+        onCreateBookmark={() => setCreateBookmarkOpen(true)}
+        onCreateFolder={() => {
+          setSubfolderParentId(null);
+          setCreateFolderOpen(true);
+        }}
+        onRefresh={ctx.refresh}
       />
 
       {/* 对话框 */}
