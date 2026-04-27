@@ -138,6 +138,7 @@ export default function ContentArea({
                 key={item.id}
                 item={item}
                 selected={selectedIds.has(item.id)}
+                selectedIds={selectedIds}
                 cut={cutIds.has(item.id)}
                 docked={dockedIds?.has(item.id)}
                 onSelect={(multi, range) => toggleSelect(item.id, multi, range)}
@@ -156,6 +157,7 @@ export default function ContentArea({
                 key={item.id}
                 item={item}
                 selected={selectedIds.has(item.id)}
+                selectedIds={selectedIds}
                 cut={cutIds.has(item.id)}
                 docked={dockedIds?.has(item.id)}
                 onSelect={(multi, range) => toggleSelect(item.id, multi, range)}

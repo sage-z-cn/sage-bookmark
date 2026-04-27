@@ -1,12 +1,14 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { AppBookmarkNode } from "@/types/bookmark";
+import { useGlobalDnd } from "@/sidepanel/context/GlobalDndContext";
 import ListItem from "./ListItem";
 import styles from "./ContentArea.module.css";
 
 interface ListSortableItemProps {
   item: AppBookmarkNode;
   selected: boolean;
+  selectedIds: Set<string>;
   cut?: boolean;
   docked?: boolean;
   onSelect: (multi: boolean, range: boolean) => void;
@@ -20,6 +22,7 @@ interface ListSortableItemProps {
 export default function ListSortableItem({
   item,
   selected,
+  selectedIds,
   cut = false,
   docked = false,
   onSelect,
@@ -29,6 +32,10 @@ export default function ListSortableItem({
   onRenameCancel,
   highlightQuery,
 }: ListSortableItemProps) {
+  const { isDragging: globalDragging, activeIds } = useGlobalDnd();
+
+  const dragIds = selected ? [...selectedIds] : [item.id as string];
+
   const {
     attributes,
     listeners,
@@ -44,13 +51,17 @@ export default function ListSortableItem({
       title: item.title,
       url: item.url,
       faviconUrl: item.faviconUrl,
+      ids: dragIds,
     },
   });
+
+  const isInDragGroup =
+    globalDragging && !isDragging && activeIds.includes(item.id as string);
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0 : docked ? 0.45 : 1,
+    opacity: isDragging || isInDragGroup ? 0 : docked ? 0.45 : 1,
   };
 
   return (
@@ -59,7 +70,7 @@ export default function ListSortableItem({
       style={style}
       {...attributes}
       {...listeners}
-      className={`${isDragging ? styles.draggingItem : ""} ${docked && !isDragging ? styles.itemDocked : ""}`}
+      className={`${isDragging ? styles.draggingItem : ""} ${isInDragGroup ? styles.dragGroupItem : ""} ${docked && !isDragging && !isInDragGroup ? styles.itemDocked : ""}`}
     >
       <ListItem
         item={item}

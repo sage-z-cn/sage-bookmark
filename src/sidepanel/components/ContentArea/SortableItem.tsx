@@ -1,6 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { AppBookmarkNode } from "@/types/bookmark";
+import { useGlobalDnd } from "@/sidepanel/context/GlobalDndContext";
 import FolderItem from "./FolderItem";
 import BookmarkItem from "./BookmarkItem";
 import styles from "./ContentArea.module.css";
@@ -8,6 +9,7 @@ import styles from "./ContentArea.module.css";
 interface SortableItemProps {
   item: AppBookmarkNode;
   selected: boolean;
+  selectedIds: Set<string>;
   cut?: boolean;
   docked?: boolean;
   onSelect: (multi: boolean, range: boolean) => void;
@@ -22,6 +24,7 @@ interface SortableItemProps {
 export default function SortableItem({
   item,
   selected,
+  selectedIds,
   cut = false,
   docked = false,
   onSelect,
@@ -31,6 +34,10 @@ export default function SortableItem({
   onRenameCancel,
   highlightQuery,
 }: SortableItemProps) {
+  const { isDragging: globalDragging, activeIds } = useGlobalDnd();
+
+  const dragIds = selected ? [...selectedIds] : [item.id as string];
+
   const {
     attributes,
     listeners,
@@ -46,20 +53,24 @@ export default function SortableItem({
       title: item.title,
       url: item.url,
       faviconUrl: item.faviconUrl,
+      ids: dragIds,
     },
   });
+
+  const isInDragGroup =
+    globalDragging && !isDragging && activeIds.includes(item.id as string);
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0 : docked ? 0.45 : 1,
+    opacity: isDragging || isInDragGroup ? 0 : docked ? 0.45 : 1,
   };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`${isDragging ? styles.draggingItem : ""} ${docked && !isDragging ? styles.itemDocked : ""}`}
+      className={`${isDragging ? styles.draggingItem : ""} ${isInDragGroup ? styles.dragGroupItem : ""} ${docked && !isDragging && !isInDragGroup ? styles.itemDocked : ""}`}
       {...attributes}
       {...listeners}
     >
