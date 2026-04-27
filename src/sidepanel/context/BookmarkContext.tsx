@@ -14,6 +14,7 @@ import type {
   PathSegment,
 } from "@/types/bookmark";
 import { bookmarkService } from "@/sidepanel/services/bookmarkService";
+import { useViewSettings } from "@/sidepanel/context/ViewSettingsContext";
 
 interface BookmarkContextValue {
   index: BookmarkIndex | null;
@@ -70,6 +71,7 @@ export function useBookmarkContext() {
 }
 
 export function BookmarkProvider({ children }: { children: React.ReactNode }) {
+  const { persistedFolderId, setPersistedFolderId } = useViewSettings();
   const [index, setIndex] = useState<BookmarkIndex | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentNodeId, setCurrentNodeId] = useState("1");
@@ -89,21 +91,27 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
       setIndex(idx);
       if (!initializedRef.current) {
         initializedRef.current = true;
-        const bookmarkBarId = "1";
-        if (idx.nodeMap.has(bookmarkBarId)) {
-          setCurrentNodeId(bookmarkBarId);
-        } else if (
-          idx.rootNodes.length > 0 &&
-          idx.rootNodes[0].children?.length
-        ) {
-          const firstChild = idx.rootNodes[0].children[0];
-          setCurrentNodeId(firstChild.id);
+        // 优先恢复持久化的目录（如果有效且存在）
+        if (persistedFolderId && idx.nodeMap.has(persistedFolderId)) {
+          setCurrentNodeId(persistedFolderId);
+          historyRef.current = [persistedFolderId];
+        } else {
+          const bookmarkBarId = "1";
+          if (idx.nodeMap.has(bookmarkBarId)) {
+            setCurrentNodeId(bookmarkBarId);
+          } else if (
+            idx.rootNodes.length > 0 &&
+            idx.rootNodes[0].children?.length
+          ) {
+            const firstChild = idx.rootNodes[0].children[0];
+            setCurrentNodeId(firstChild.id);
+          }
         }
       }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [persistedFolderId]);
 
   useEffect(() => {
     loadTree();
@@ -126,15 +134,20 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
     return bookmarkService.getPathToRoot(currentNodeId, index.nodeMap);
   }, [index, currentNodeId]);
 
-  const navigateTo = useCallback((folderId: string) => {
-    setCurrentNodeId(folderId);
-    setSelectedIds(new Set());
-    setLastSelectedId(null);
-    const history = historyRef.current;
-    const idx = historyIdxRef.current;
-    historyRef.current = [...history.slice(0, idx + 1), folderId];
-    historyIdxRef.current = historyRef.current.length - 1;
-  }, []);
+  const navigateTo = useCallback(
+    (folderId: string) => {
+      setCurrentNodeId(folderId);
+      setSelectedIds(new Set());
+      setLastSelectedId(null);
+      const history = historyRef.current;
+      const idx = historyIdxRef.current;
+      historyRef.current = [...history.slice(0, idx + 1), folderId];
+      historyIdxRef.current = historyRef.current.length - 1;
+      // 持久化当前目录
+      setPersistedFolderId(folderId);
+    },
+    [setPersistedFolderId],
+  );
 
   const canGoBack = historyIdxRef.current > 0;
   const canGoForward = historyIdxRef.current < historyRef.current.length - 1;
