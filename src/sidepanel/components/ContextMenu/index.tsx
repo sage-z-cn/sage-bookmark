@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { useBookmarkContext } from "@/sidepanel/context/BookmarkContext";
 import type { AppBookmarkNode } from "@/types/bookmark";
 import styles from "./ContextMenu.module.css";
@@ -35,7 +41,46 @@ export default function ContextMenu({
     targetItem: null,
     isBackground: false,
   });
+  const [position, setPosition] = useState({ x: -9999, y: -9999 });
+  const [positioned, setPositioned] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // 计算菜单位置（渲染后根据实际尺寸调整）
+  useLayoutEffect(() => {
+    if (!state.visible || !menuRef.current) return;
+
+    const menu = menuRef.current;
+    const menuRect = menu.getBoundingClientRect();
+    const menuWidth = menuRect.width;
+    const menuHeight = menuRect.height;
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    let x = state.x;
+    let y = state.y;
+
+    // 水平定位：优先在鼠标右侧，空间不足则在左侧
+    if (x + menuWidth > viewportWidth) {
+      x = Math.max(0, x - menuWidth);
+    }
+
+    // 垂直定位：优先在鼠标下方，空间不足则在上方
+    if (y + menuHeight > viewportHeight) {
+      y = Math.max(0, viewportHeight - menuHeight);
+    }
+
+    setPosition({ x, y });
+    setPositioned(true);
+  }, [state]);
+
+  // 重置定位状态
+  useEffect(() => {
+    if (!state.visible) {
+      setPosition({ x: -9999, y: -9999 });
+      setPositioned(false);
+    }
+  }, [state.visible]);
 
   // 右键事件监听（项目上右键）
   useEffect(() => {
@@ -52,10 +97,13 @@ export default function ContextMenu({
         toggleSelect(itemId, false, false);
       }
 
-      const x = Math.min(e.clientX, window.innerWidth - 200);
-      const y = Math.min(e.clientY, window.innerHeight - 300);
-
-      setState({ visible: true, x, y, targetItem: item, isBackground: false });
+      setState({
+        visible: true,
+        x: e.clientX,
+        y: e.clientY,
+        targetItem: item,
+        isBackground: false,
+      });
     }
 
     document.addEventListener("contextmenu", handleContextMenu);
@@ -75,10 +123,13 @@ export default function ContextMenu({
 
       e.preventDefault();
 
-      const x = Math.min(e.clientX, window.innerWidth - 200);
-      const y = Math.min(e.clientY, window.innerHeight - 300);
-
-      setState({ visible: true, x, y, targetItem: null, isBackground: true });
+      setState({
+        visible: true,
+        x: e.clientX,
+        y: e.clientY,
+        targetItem: null,
+        isBackground: true,
+      });
     }
 
     document.addEventListener("contextmenu", handleBackgroundContextMenu);
@@ -127,7 +178,7 @@ export default function ContextMenu({
       <div
         ref={menuRef}
         className={styles.menu}
-        style={{ left: state.x, top: state.y }}
+        style={{ left: position.x, top: position.y, visibility: positioned ? 'visible' : 'hidden' }}
       >
         {canPaste && (
           <>
@@ -191,7 +242,7 @@ export default function ContextMenu({
     <div
       ref={menuRef}
       className={styles.menu}
-      style={{ left: state.x, top: state.y }}
+      style={{ left: position.x, top: position.y, visibility: positioned ? 'visible' : 'hidden' }}
     >
       {/* 书签：打开链接 */}
       {isBookmark && item?.url && (
