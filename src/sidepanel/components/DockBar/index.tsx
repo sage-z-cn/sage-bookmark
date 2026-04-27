@@ -45,7 +45,6 @@ export default function DockBar({
   const handleCancelAll = useCallback(async () => {
     try {
       await onCancelAll();
-      message.info(`已取消暂存 ${items.length} 个项目`);
     } catch (e) {
       message.error("取消失败");
       console.error(e);
