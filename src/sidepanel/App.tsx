@@ -310,22 +310,10 @@ function AppWithDnd() {
     [bookmarkCtx],
   );
 
-  // 处理移动到文件夹：先乐观更新UI，再调用API
-  const handleMoveToFolder = useCallback(
-    (ids: string[], targetFolderId: string) => {
-      // 乐观更新UI
-      bookmarkCtx.optimisticMoveIntoFolder(ids, targetFolderId);
-      // 调用API实际移动
-      bookmarkCtx.moveItems(ids, targetFolderId);
-    },
-    [bookmarkCtx],
-  );
-
   return (
     <GlobalDndProvider
       onDropToDock={handleDropToDock}
       onReorder={handleReorder}
-      onMoveToFolder={handleMoveToFolder}
       viewMode={viewMode}
     >
       <AppContent />

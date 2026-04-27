@@ -100,7 +100,6 @@ interface GlobalDndProviderProps {
   onDragEnd?: () => void;
   onDropToDock?: (ids: string[]) => void;
   onReorder?: (activeId: string, overId: string) => void;
-  onMoveToFolder?: (ids: string[], targetFolderId: string) => void;
   renderOverlay?: (item: DragItemData, count: number) => ReactNode;
   viewMode?: "grid" | "list";
 }
@@ -113,7 +112,6 @@ export function GlobalDndProvider({
   onDragEnd,
   onDropToDock,
   onReorder,
-  onMoveToFolder,
   renderOverlay,
   viewMode = "grid",
 }: GlobalDndProviderProps) {
@@ -186,17 +184,8 @@ export function GlobalDndProvider({
       // 处理放置到 Dock
       if (over.id === DOCK_DROPPABLE_ID && state.source === "content") {
         onDropToDock?.(state.activeIds);
-      }
-      // 处理同目录排序（放置到另一个内容项上）
-      else if (over.id !== active.id && state.source === "content") {
-        const overData = over.data.current;
-        // 如果放置目标是文件夹，则移动到文件夹
-        if (overData?.type === "folder") {
-          onMoveToFolder?.(state.activeIds, over.id as string);
-        } else {
-          // 同目录内排序
-          onReorder?.(active.id as string, over.id as string);
-        }
+      } else if (over.id !== active.id && state.source === "content") {
+        onReorder?.(active.id as string, over.id as string);
       }
 
       setState({
@@ -209,7 +198,7 @@ export function GlobalDndProvider({
       setIsOverDock(false);
       onDragEnd?.();
     },
-    [onDragEnd, onDropToDock, onReorder, onMoveToFolder, state],
+    [onDragEnd, onDropToDock, onReorder, state],
   );
 
   const handleDragCancel = useCallback(() => {
