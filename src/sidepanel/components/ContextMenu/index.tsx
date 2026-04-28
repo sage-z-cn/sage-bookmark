@@ -19,6 +19,7 @@ interface ContextMenuState {
 
 interface ContextMenuProps {
   onEdit: (item: AppBookmarkNode) => void;
+  onUpdate?: (item: AppBookmarkNode) => void;
   onDelete: () => void;
   onCreateBookmark?: () => void;
   onCreateFolder?: () => void;
@@ -27,6 +28,7 @@ interface ContextMenuProps {
 
 export default function ContextMenu({
   onEdit,
+  onUpdate,
   onDelete,
   onCreateBookmark,
   onCreateFolder,
@@ -178,7 +180,11 @@ export default function ContextMenu({
       <div
         ref={menuRef}
         className={styles.menu}
-        style={{ left: position.x, top: position.y, visibility: positioned ? 'visible' : 'hidden' }}
+        style={{
+          left: position.x,
+          top: position.y,
+          visibility: positioned ? "visible" : "hidden",
+        }}
       >
         {canPaste && (
           <>
@@ -242,7 +248,11 @@ export default function ContextMenu({
     <div
       ref={menuRef}
       className={styles.menu}
-      style={{ left: position.x, top: position.y, visibility: positioned ? 'visible' : 'hidden' }}
+      style={{
+        left: position.x,
+        top: position.y,
+        visibility: positioned ? "visible" : "hidden",
+      }}
     >
       {/* 书签：打开链接 */}
       {isBookmark && item?.url && (
@@ -333,6 +343,19 @@ export default function ContextMenu({
         >
           {isFolder ? "重命名" : "编辑"}
           <span className={styles.shortcut}>F2</span>
+        </button>
+      )}
+
+      {/* 更新：用当前标签页信息更新书签 */}
+      {isBookmark && onUpdate && (
+        <button
+          className={styles.menuItem}
+          onClick={() => {
+            onUpdate(item);
+            close();
+          }}
+        >
+          更新
         </button>
       )}
 

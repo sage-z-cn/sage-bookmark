@@ -56,6 +56,10 @@ function AppContent() {
 
   // 正在编辑的书签
   const editingBookmarkRef = useRef<AppBookmarkNode | null>(null);
+  // 编辑弹窗覆盖值（用于"更新"功能带入当前标签页信息）
+  const editInitialValuesRef = useRef<
+    { title: string; url: string } | undefined
+  >(undefined);
 
   // 获取唯一选中项
   const singleSelectedItem =
@@ -72,11 +76,34 @@ function AppContent() {
         setRenamingFolderId(target.id);
       } else {
         editingBookmarkRef.current = target;
+        editInitialValuesRef.current = undefined;
         setEditBookmarkOpen(true);
       }
     },
     [singleSelectedItem],
   );
+
+  // 处理更新操作：复用编辑弹窗，带入当前标签页标题和 URL
+  const handleUpdate = useCallback(async (item: AppBookmarkNode) => {
+    if (item.type !== "bookmark") return;
+    try {
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
+      editingBookmarkRef.current = item;
+      editInitialValuesRef.current = {
+        title: tab?.title || item.title,
+        url: tab?.url || (item.url ?? ""),
+      };
+      setEditBookmarkOpen(true);
+    } catch {
+      // 获取标签页失败，直接打开编辑弹窗不覆盖值
+      editingBookmarkRef.current = item;
+      editInitialValuesRef.current = undefined;
+      setEditBookmarkOpen(true);
+    }
+  }, []);
 
   // 处理删除操作
   const handleDelete = useCallback(() => {
@@ -223,6 +250,7 @@ function AppContent() {
       {/* 右键上下文菜单 */}
       <ContextMenu
         onEdit={(item) => handleEdit(item)}
+        onUpdate={handleUpdate}
         onDelete={handleDelete}
         onCreateBookmark={() => setCreateBookmarkOpen(true)}
         onCreateFolder={() => {
@@ -257,9 +285,11 @@ function AppContent() {
       <EditBookmarkDialog
         open={editBookmarkOpen}
         bookmark={editingBookmarkRef.current}
+        initialValues={editInitialValuesRef.current}
         onClose={() => {
           setEditBookmarkOpen(false);
           editingBookmarkRef.current = null;
+          editInitialValuesRef.current = undefined;
         }}
         onConfirm={ctx.updateBookmark}
       />

@@ -7,6 +7,8 @@ interface EditBookmarkDialogProps {
   bookmark: AppBookmarkNode | null
   onClose: () => void
   onConfirm: (id: string, title: string, url: string) => Promise<void>
+  /** 用于覆盖默认书签值的初始值（如当前标签页信息） */
+  initialValues?: { title: string; url: string }
 }
 
 export default function EditBookmarkDialog({
@@ -14,6 +16,7 @@ export default function EditBookmarkDialog({
   bookmark,
   onClose,
   onConfirm,
+  initialValues,
 }: EditBookmarkDialogProps) {
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
@@ -22,8 +25,8 @@ export default function EditBookmarkDialog({
   function handleAfterOpenChange(visible: boolean) {
     if (visible && bookmark) {
       form.setFieldsValue({
-        title: bookmark.title,
-        url: bookmark.url ?? '',
+        title: initialValues?.title ?? bookmark.title,
+        url: initialValues?.url ?? (bookmark.url ?? ''),
       })
     }
   }
