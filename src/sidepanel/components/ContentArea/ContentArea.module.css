@@ -175,8 +175,6 @@
 .itemDocked {
   opacity: 0.45;
   filter: grayscale(0.3);
-  border: 2px dashed var(--color-primary);
-  border-radius: 8px;
 }
 
 /* 被剪切的项目虚化样式 */

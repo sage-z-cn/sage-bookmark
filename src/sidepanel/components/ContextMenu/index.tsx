@@ -6,6 +6,7 @@ import {
   useState,
 } from "react";
 import { useBookmarkContext } from "@/sidepanel/context/BookmarkContext";
+import { useDockContext } from "@/sidepanel/context/DockContext";
 import type { AppBookmarkNode } from "@/types/bookmark";
 import styles from "./ContextMenu.module.css";
 
@@ -35,6 +36,7 @@ export default function ContextMenu({
   onRefresh,
 }: ContextMenuProps) {
   const ctx = useBookmarkContext();
+  const dockCtx = useDockContext();
   const {
     selectedIds,
     index,
@@ -298,6 +300,27 @@ export default function ContextMenu({
         >
           打开文件夹
         </button>
+      )}
+
+      {/* 暂存到 Dock */}
+      {!isRoot && hasSelection && (
+        <>
+          <div className={styles.divider} />
+          <button
+            className={styles.menuItem}
+            onClick={() => {
+              const idsToDock =
+                selectedIds.size > 0 ? [...selectedIds] : [item!.id];
+              const addedCount = dockCtx.addItems(idsToDock);
+              if (addedCount > 0) {
+                // 成功添加，可以显示提示
+              }
+              close();
+            }}
+          >
+            暂存
+          </button>
+        </>
       )}
 
       {/* 剪切/复制/粘贴 */}
