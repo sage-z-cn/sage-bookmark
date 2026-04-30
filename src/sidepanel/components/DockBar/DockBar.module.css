@@ -1,5 +1,5 @@
 .dockBar {
-  background: rgba(255, 255, 255, 0.85);
+  background: var(--dock-bar-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid var(--color-border);
@@ -25,8 +25,8 @@
 }
 
 .dockBarDropActive {
-  box-shadow: 0 -4px 12px rgba(99, 102, 241, 0.35);
-  background: rgba(255, 255, 255, 0.95);
+  box-shadow: var(--dock-drop-shadow);
+  background: var(--dock-drop-bg);
 }
 
 .itemsContainer {
@@ -60,7 +60,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #f5f5f7;
+  background: var(--dock-item-bg);
   border-radius: 8px;
   cursor: grab;
   position: relative;
@@ -69,7 +69,7 @@
 }
 
 .dockItem:hover {
-  background: #eef2ff;
+  background: var(--dock-item-hover-bg);
 }
 
 .dockItem:active {
@@ -78,7 +78,7 @@
 
 .dockItemDragging {
   opacity: 0.5;
-  background: #eef2ff;
+  background: var(--dock-item-hover-bg);
 }
 
 .itemIcon {
@@ -103,7 +103,7 @@
 
 .folderIcon {
   font-size: 24px;
-  color: #f59e0b;
+  color: var(--color-warning);
 }
 
 .itemTitle {
@@ -144,7 +144,7 @@
 }
 
 .removeButton:hover {
-  background: rgba(239, 68, 68, 0.1);
+  background: var(--dock-remove-hover-bg);
   color: var(--color-error);
 }
 
@@ -171,7 +171,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(99, 102, 241, 0.08);
+  background: var(--dock-hint-bg);
   border: 2px dashed var(--color-primary);
   border-radius: 8px;
   margin: 8px 16px;
