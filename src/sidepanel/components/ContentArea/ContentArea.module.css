@@ -2,7 +2,7 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 16px;
+  padding: 0;
   background: var(--color-background);
   position: relative;
 }
@@ -27,6 +27,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   gap: 16px;
+  padding: 16px;
 }
 
 .item {
@@ -216,11 +217,46 @@
   justify-content: center;
 }
 
-.listHeaderCheckbox input[type="checkbox"] {
+.listHeaderCheckbox input[type="checkbox"],
+.listCellCheckbox input[type="checkbox"] {
   width: 16px;
   height: 16px;
   cursor: pointer;
   accent-color: var(--color-primary);
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-surface);
+  position: relative;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+}
+
+.listHeaderCheckbox input[type="checkbox"]:checked,
+.listCellCheckbox input[type="checkbox"]:checked {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.listHeaderCheckbox input[type="checkbox"]:checked::after,
+.listCellCheckbox input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 5px;
+  height: 9px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.listHeaderCheckbox input[type="checkbox"]:focus-visible,
+.listCellCheckbox input[type="checkbox"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
 }
 
 .listHeaderName {
@@ -266,13 +302,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.listCellCheckbox input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  accent-color: var(--color-primary);
 }
 
 .listCellName {

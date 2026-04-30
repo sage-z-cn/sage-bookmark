@@ -111,7 +111,12 @@ export default function ContentArea({
   }
 
   return (
-    <div ref={containerRef} className={styles.contentArea} data-content-area {...handlers}>
+    <div
+      ref={containerRef}
+      className={styles.contentArea}
+      data-content-area
+      {...handlers}
+    >
       <DragContext viewMode={viewMode}>
         {viewMode === "list" ? (
           <div className={styles.listContainer}>
