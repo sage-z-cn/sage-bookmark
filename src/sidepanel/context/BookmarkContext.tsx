@@ -62,6 +62,8 @@ interface BookmarkContextValue {
   // 导出导入
   exportAsJson: (folderId: string) => Promise<void>;
   importFromJson: (file: File, targetParentId: string) => Promise<void>;
+  // 根目录判断
+  isRoot: boolean;
 }
 
 const BookmarkContext = createContext<BookmarkContextValue | null>(null);
@@ -463,6 +465,8 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
+  const isRoot = currentNodeId === "0";
+
   const value = useMemo<BookmarkContextValue>(
     () => ({
       index,
@@ -500,6 +504,7 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
       optimisticMoveIntoFolder,
       exportAsJson,
       importFromJson,
+      isRoot,
     }),
     [
       index,
@@ -537,6 +542,7 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
       optimisticMoveIntoFolder,
       exportAsJson,
       importFromJson,
+      isRoot,
     ],
   );
 

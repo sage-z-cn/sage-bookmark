@@ -168,22 +168,22 @@ function AppContent() {
         ctx.goBack();
       } else if (e.key === "Delete") {
         e.preventDefault();
-        handleDelete();
+        if (!ctx.isRoot) handleDelete();
       } else if (e.key === "F2") {
         e.preventDefault();
-        handleEdit();
+        if (!ctx.isRoot) handleEdit();
       } else if (ctrl && e.key === "x") {
         e.preventDefault();
-        ctx.cut();
+        if (!ctx.isRoot) ctx.cut();
       } else if (ctrl && e.key === "c") {
         e.preventDefault();
-        ctx.copy();
+        if (!ctx.isRoot) ctx.copy();
       } else if (ctrl && e.key === "v") {
         e.preventDefault();
-        ctx.paste();
+        if (!ctx.isRoot) ctx.paste();
       } else if (ctrl && e.key === "a") {
         e.preventDefault();
-        ctx.selectAll();
+        if (!ctx.isRoot) ctx.selectAll();
       }
     }
 

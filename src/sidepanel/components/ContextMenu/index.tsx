@@ -35,7 +35,16 @@ export default function ContextMenu({
   onRefresh,
 }: ContextMenuProps) {
   const ctx = useBookmarkContext();
-  const { selectedIds, index, toggleSelect, cut, copy, paste, canPaste } = ctx;
+  const {
+    selectedIds,
+    index,
+    toggleSelect,
+    cut,
+    copy,
+    paste,
+    canPaste,
+    isRoot,
+  } = ctx;
   const [state, setState] = useState<ContextMenuState>({
     visible: false,
     x: 0,
@@ -186,7 +195,7 @@ export default function ContextMenu({
           visibility: positioned ? "visible" : "hidden",
         }}
       >
-        {canPaste && (
+        {!isRoot && canPaste && (
           <>
             <button
               className={styles.menuItem}
@@ -202,7 +211,7 @@ export default function ContextMenu({
           </>
         )}
 
-        {onCreateBookmark && (
+        {!isRoot && onCreateBookmark && (
           <button
             className={styles.menuItem}
             onClick={() => {
@@ -213,7 +222,7 @@ export default function ContextMenu({
             新建书签
           </button>
         )}
-        {onCreateFolder && (
+        {!isRoot && onCreateFolder && (
           <button
             className={styles.menuItem}
             onClick={() => {
@@ -227,7 +236,7 @@ export default function ContextMenu({
 
         {onRefresh && (
           <>
-            <div className={styles.divider} />
+            {!isRoot && <div className={styles.divider} />}
             <button
               className={styles.menuItem}
               onClick={() => {
@@ -275,65 +284,65 @@ export default function ContextMenu({
           >
             在新标签页中打开
           </button>
-          <div className={styles.divider} />
         </>
       )}
 
       {/* 文件夹：打开 */}
       {isFolder && (
+        <button
+          className={styles.menuItem}
+          onClick={() => {
+            ctx.navigateTo(item!.id);
+            close();
+          }}
+        >
+          打开文件夹
+        </button>
+      )}
+
+      {/* 剪切/复制/粘贴 */}
+      {!isRoot && (
         <>
+          <div className={styles.divider} />
           <button
             className={styles.menuItem}
+            disabled={!hasSelection}
             onClick={() => {
-              ctx.navigateTo(item!.id);
+              cut();
               close();
             }}
           >
-            打开文件夹
+            剪切
+            <span className={styles.shortcut}>Ctrl+X</span>
+          </button>
+          <button
+            className={styles.menuItem}
+            disabled={!hasSelection}
+            onClick={() => {
+              copy();
+              close();
+            }}
+          >
+            复制
+            <span className={styles.shortcut}>Ctrl+C</span>
+          </button>
+          <button
+            className={styles.menuItem}
+            disabled={!canPaste}
+            onClick={() => {
+              paste();
+              close();
+            }}
+          >
+            粘贴
+            <span className={styles.shortcut}>Ctrl+V</span>
           </button>
           <div className={styles.divider} />
         </>
       )}
 
-      {/* 剪切/复制/粘贴 */}
-      <button
-        className={styles.menuItem}
-        disabled={!hasSelection}
-        onClick={() => {
-          cut();
-          close();
-        }}
-      >
-        剪切
-        <span className={styles.shortcut}>Ctrl+X</span>
-      </button>
-      <button
-        className={styles.menuItem}
-        disabled={!hasSelection}
-        onClick={() => {
-          copy();
-          close();
-        }}
-      >
-        复制
-        <span className={styles.shortcut}>Ctrl+C</span>
-      </button>
-      <button
-        className={styles.menuItem}
-        disabled={!canPaste}
-        onClick={() => {
-          paste();
-          close();
-        }}
-      >
-        粘贴
-        <span className={styles.shortcut}>Ctrl+V</span>
-      </button>
-
-      <div className={styles.divider} />
-
       {/* 编辑 */}
-      {item && (
+      {!isRoot && item && (
         <button
           className={styles.menuItem}
           onClick={() => {
@@ -347,7 +356,7 @@ export default function ContextMenu({
       )}
 
       {/* 更新：用当前标签页信息更新书签 */}
-      {isBookmark && onUpdate && (
+      {!isRoot && isBookmark && onUpdate && (
         <button
           className={styles.menuItem}
           onClick={() => {
@@ -360,17 +369,19 @@ export default function ContextMenu({
       )}
 
       {/* 删除 */}
-      <button
-        className={`${styles.menuItem} ${styles.danger}`}
-        disabled={!hasSelection}
-        onClick={() => {
-          onDelete();
-          close();
-        }}
-      >
-        删除
-        <span className={styles.shortcut}>Del</span>
-      </button>
+      {!isRoot && (
+        <button
+          className={`${styles.menuItem} ${styles.danger}`}
+          disabled={!hasSelection}
+          onClick={() => {
+            onDelete();
+            close();
+          }}
+        >
+          删除
+          <span className={styles.shortcut}>Del</span>
+        </button>
+      )}
     </div>
   );
 }

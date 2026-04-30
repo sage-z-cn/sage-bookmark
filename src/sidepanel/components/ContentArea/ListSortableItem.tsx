@@ -2,6 +2,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { AppBookmarkNode } from "@/types/bookmark";
 import { useGlobalDnd } from "@/sidepanel/context/GlobalDndContext";
+import { useBookmarkContext } from "@/sidepanel/context/BookmarkContext";
 import ListItem from "./ListItem";
 import styles from "./ContentArea.module.css";
 
@@ -32,6 +33,8 @@ export default function ListSortableItem({
   onRenameCancel,
   highlightQuery,
 }: ListSortableItemProps) {
+  const { isRoot } = useBookmarkContext();
+
   const {
     isDragging: globalDragging,
     activeIds,
@@ -83,7 +86,7 @@ export default function ListSortableItem({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      {...listeners}
+      {...(isRoot ? {} : listeners)}
       className={`${isDragging ? styles.draggingItem : ""} ${isInDragGroup ? styles.dragGroupItem : ""} ${docked && !isDragging && !isInDragGroup ? styles.itemDocked : ""} ${folderHighlightClass}`}
     >
       <ListItem

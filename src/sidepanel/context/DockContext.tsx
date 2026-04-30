@@ -97,13 +97,14 @@ export function DockProvider({ children }: { children: ReactNode }) {
   // 检查是否可以放置
   const canPlace = useMemo(() => {
     if (dock.isEmpty) return false;
+    if (bookmarkCtx.isRoot) return false;
     const nodeMap = bookmarkCtx.index?.nodeMap;
     if (!nodeMap) return false;
     return !dock.isDescendantOfDockedFolder(
       bookmarkCtx.currentNodeId,
       nodeMap,
     );
-  }, [dock, bookmarkCtx.index, bookmarkCtx.currentNodeId]);
+  }, [dock, bookmarkCtx.index, bookmarkCtx.currentNodeId, bookmarkCtx.isRoot]);
 
   const value = useMemo<DockContextValue>(
     () => ({

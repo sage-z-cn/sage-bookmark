@@ -2,6 +2,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { AppBookmarkNode } from "@/types/bookmark";
 import { useGlobalDnd } from "@/sidepanel/context/GlobalDndContext";
+import { useBookmarkContext } from "@/sidepanel/context/BookmarkContext";
 import FolderItem from "./FolderItem";
 import BookmarkItem from "./BookmarkItem";
 import styles from "./ContentArea.module.css";
@@ -34,6 +35,8 @@ export default function SortableItem({
   onRenameCancel,
   highlightQuery,
 }: SortableItemProps) {
+  const { isRoot } = useBookmarkContext();
+
   const {
     isDragging: globalDragging,
     activeIds,
@@ -86,7 +89,7 @@ export default function SortableItem({
       style={style}
       className={`${isDragging ? styles.draggingItem : ""} ${isInDragGroup ? styles.dragGroupItem : ""} ${docked && !isDragging && !isInDragGroup ? styles.itemDocked : ""} ${folderHighlightClass}`}
       {...attributes}
-      {...listeners}
+      {...(isRoot ? {} : listeners)}
     >
       {item.type === "folder" ? (
         <FolderItem

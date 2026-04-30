@@ -46,6 +46,7 @@ export default function Toolbar({
     currentNodeId,
     exportAsJson,
     importFromJson,
+    isRoot,
   } = useBookmarkContext();
   const { theme, toggleTheme } = useTheme();
   const hasSelection = selectedIds.size > 0;
@@ -115,12 +116,14 @@ export default function Toolbar({
         type="text"
         size="small"
         icon={<BookOutlined />}
+        disabled={isRoot}
         onClick={onCreateBookmark}
       />
       <Button
         type="text"
         size="small"
         icon={<FolderAddOutlined />}
+        disabled={isRoot}
         onClick={onCreateFolder}
       />
 
@@ -130,21 +133,21 @@ export default function Toolbar({
         type="text"
         size="small"
         icon={<ScissorOutlined />}
-        disabled={!hasSelection}
+        disabled={!hasSelection || isRoot}
         onClick={cut}
       />
       <Button
         type="text"
         size="small"
         icon={<CopyOutlined />}
-        disabled={!hasSelection}
+        disabled={!hasSelection || isRoot}
         onClick={copy}
       />
       <Button
         type="text"
         size="small"
         icon={<SnippetsOutlined />}
-        disabled={!canPaste}
+        disabled={!canPaste || isRoot}
         onClick={paste}
       />
 
@@ -154,7 +157,7 @@ export default function Toolbar({
         type="text"
         size="small"
         icon={<EditOutlined />}
-        disabled={!singleSelected}
+        disabled={!singleSelected || isRoot}
         onClick={onEdit}
       />
 
@@ -163,7 +166,7 @@ export default function Toolbar({
         size="small"
         danger
         icon={<DeleteOutlined />}
-        disabled={!hasSelection}
+        disabled={!hasSelection || isRoot}
         onClick={onDelete}
       />
 
