@@ -327,8 +327,11 @@ export function GlobalDndProvider({
                 color: "var(--color-text-primary, #1e293b)",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
                 textAlign: "center",
+                wordBreak: "break-all",
               }}
             >
               {displayTitle}
