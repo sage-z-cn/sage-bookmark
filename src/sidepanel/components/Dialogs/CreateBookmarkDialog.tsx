@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Modal, Form, Input, message } from 'antd'
+import { Form, Input, message } from 'antd'
+import BasicModal from './BasicModal'
 
 interface CreateBookmarkDialogProps {
   open: boolean
@@ -54,18 +55,16 @@ export default function CreateBookmarkDialog({
   }
 
   return (
-    <Modal
+    <BasicModal
       title="新建书签"
       open={open}
       onOk={handleOk}
       onCancel={handleCancel}
       confirmLoading={loading}
       okText="创建"
-      cancelText="取消"
-      destroyOnClose
       afterOpenChange={handleAfterOpenChange}
     >
-      <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
+      <Form form={form} layout="vertical" size="small" onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleOk() } }} style={{ rowGap: 8 }}>
         <Form.Item
           name="title"
           label="标题"
@@ -87,6 +86,6 @@ export default function CreateBookmarkDialog({
           />
         </Form.Item>
       </Form>
-    </Modal>
+    </BasicModal>
   )
 }

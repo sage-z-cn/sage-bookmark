@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Modal, message } from 'antd'
+import { message } from 'antd'
+import BasicModal from './BasicModal'
 
 interface ConfirmDeleteDialogProps {
   open: boolean
@@ -30,17 +31,16 @@ export default function ConfirmDeleteDialog({
   }
 
   return (
-    <Modal
+    <BasicModal
       title="确认删除"
       open={open}
       onOk={handleOk}
       onCancel={onClose}
       confirmLoading={loading}
       okText="删除"
-      cancelText="取消"
       okButtonProps={{ danger: true }}
     >
-      <p>确定删除选中的 {count} 个项目吗？此操作不可撤销。</p>
-    </Modal>
+      <p style={{ margin: 0 }}>确定删除选中的 {count} 个项目吗？此操作不可撤销。</p>
+    </BasicModal>
   )
 }
