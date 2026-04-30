@@ -36,20 +36,6 @@
   overflow-x: auto;
   overflow-y: hidden;
   padding: 4px 0;
-  scrollbar-width: thin;
-}
-
-.itemsContainer::-webkit-scrollbar {
-  height: 4px;
-}
-
-.itemsContainer::-webkit-scrollbar-thumb {
-  background-color: var(--color-border);
-  border-radius: 2px;
-}
-
-.itemsContainer::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-neutral);
 }
 
 .dockItem {
