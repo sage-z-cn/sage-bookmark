@@ -21,6 +21,7 @@ import DockBar from "./components/DockBar";
 import ContextMenu from "./components/ContextMenu";
 import CreateBookmarkDialog from "./components/Dialogs/CreateBookmarkDialog";
 import CreateFolderDialog from "./components/Dialogs/CreateFolderDialog";
+import AddToFolderDialog from "./components/Dialogs/AddToFolderDialog";
 import EditBookmarkDialog from "./components/Dialogs/EditBookmarkDialog";
 import ConfirmDeleteDialog from "./components/Dialogs/ConfirmDeleteDialog";
 import { useSearch } from "./hooks/useSearch";
@@ -45,6 +46,8 @@ function AppContent() {
   // 对话框状态
   const [createBookmarkOpen, setCreateBookmarkOpen] = useState(false);
   const [createFolderOpen, setCreateFolderOpen] = useState(false);
+  const [addToFolderOpen, setAddToFolderOpen] = useState(false);
+  const [addToFolderId, setAddToFolderId] = useState<string | null>(null);
   const [editBookmarkOpen, setEditBookmarkOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [renamingFolderId, setRenamingFolderId] = useState<string | null>(null);
@@ -103,6 +106,12 @@ function AppContent() {
       editInitialValuesRef.current = undefined;
       setEditBookmarkOpen(true);
     }
+  }, []);
+
+  // 处理收藏到文件夹操作
+  const handleAddToFolder = useCallback((folderId: string) => {
+    setAddToFolderId(folderId);
+    setAddToFolderOpen(true);
   }, []);
 
   // 处理删除操作
@@ -257,6 +266,7 @@ function AppContent() {
           setSubfolderParentId(null);
           setCreateFolderOpen(true);
         }}
+        onAddToFolder={handleAddToFolder}
         onRefresh={ctx.refresh}
       />
 
@@ -281,6 +291,15 @@ function AppContent() {
           }
           setSubfolderParentId(null);
         }}
+      />
+      <AddToFolderDialog
+        open={addToFolderOpen}
+        folderId={addToFolderId}
+        onClose={() => {
+          setAddToFolderOpen(false);
+          setAddToFolderId(null);
+        }}
+        onConfirm={ctx.createBookmarkIn}
       />
       <EditBookmarkDialog
         open={editBookmarkOpen}

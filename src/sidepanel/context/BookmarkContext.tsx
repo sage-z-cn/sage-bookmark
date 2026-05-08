@@ -37,6 +37,7 @@ interface BookmarkContextValue {
   setSelectedIds: React.Dispatch<React.SetStateAction<Set<string>>>;
   // CRUD 操作
   createBookmark: (title: string, url: string) => Promise<void>;
+  createBookmarkIn: (parentId: string, title: string, url: string) => Promise<void>;
   createFolder: (title: string) => Promise<void>;
   createFolderIn: (parentId: string, title: string) => Promise<void>;
   updateBookmark: (id: string, title: string, url: string) => Promise<void>;
@@ -253,6 +254,14 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
       await bookmarkService.createBookmark(currentNodeId, title, url);
     },
     [currentNodeId],
+  );
+
+  // CRUD：在指定文件夹下新建书签
+  const createBookmarkIn = useCallback(
+    async (parentId: string, title: string, url: string) => {
+      await bookmarkService.createBookmark(parentId, title, url);
+    },
+    [],
   );
 
   // CRUD：新建文件夹
@@ -488,6 +497,7 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
       selectAll,
       setSelectedIds,
       createBookmark,
+      createBookmarkIn,
       createFolder,
       createFolderIn,
       updateBookmark,
@@ -526,6 +536,7 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
       selectAll,
       setSelectedIds,
       createBookmark,
+      createBookmarkIn,
       createFolder,
       createFolderIn,
       updateBookmark,

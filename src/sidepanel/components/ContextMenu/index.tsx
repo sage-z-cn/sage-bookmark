@@ -24,6 +24,7 @@ interface ContextMenuProps {
   onDelete: () => void;
   onCreateBookmark?: () => void;
   onCreateFolder?: () => void;
+  onAddToFolder?: (folderId: string) => void;
   onRefresh?: () => void;
 }
 
@@ -33,6 +34,7 @@ export default function ContextMenu({
   onDelete,
   onCreateBookmark,
   onCreateFolder,
+  onAddToFolder,
   onRefresh,
 }: ContextMenuProps) {
   const ctx = useBookmarkContext();
@@ -46,6 +48,8 @@ export default function ContextMenu({
     paste,
     canPaste,
     isRoot,
+    currentNodeId,
+    refresh,
   } = ctx;
   const [state, setState] = useState<ContextMenuState>({
     visible: false,
@@ -299,6 +303,19 @@ export default function ContextMenu({
           }}
         >
           打开文件夹
+        </button>
+      )}
+
+      {/* 收藏当前页面到此文件夹 */}
+      {isFolder && onAddToFolder && (
+        <button
+          className={styles.menuItem}
+          onClick={() => {
+            onAddToFolder(item!.id);
+            close();
+          }}
+        >
+          收藏当前页面到此文件夹
         </button>
       )}
 
