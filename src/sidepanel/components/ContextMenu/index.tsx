@@ -48,8 +48,7 @@ export default function ContextMenu({
     paste,
     canPaste,
     isRoot,
-    currentNodeId,
-    refresh,
+
   } = ctx;
   const [state, setState] = useState<ContextMenuState>({
     visible: false,

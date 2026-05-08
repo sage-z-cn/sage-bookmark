@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ConfigProvider, Form, Input, message, TreeSelect } from "antd";
+import { Form, Input, message, TreeSelect } from "antd";
 import type { TreeDataNode } from "antd";
 import { useBookmarkContext } from "@/sidepanel/context/BookmarkContext";
 import type { AppBookmarkNode } from "@/types/bookmark";
